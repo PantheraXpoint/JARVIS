@@ -15,6 +15,9 @@ encodings = {
     "curie": tiktoken.get_encoding("r50k_base"),
     "babbage": tiktoken.get_encoding("r50k_base"),
     "ada": tiktoken.get_encoding("r50k_base"),
+    # Qwen models (use cl100k_base as fallback)
+    "qwen-2.5-7b": tiktoken.get_encoding("cl100k_base"),
+    "qwen-2.5-7b-instruct": tiktoken.get_encoding("cl100k_base"),
 }
 
 max_length = {
@@ -31,7 +34,10 @@ max_length = {
     "davinci": 2049,
     "curie": 2049,
     "babbage": 2049,
-    "ada": 2049
+    "ada": 2049,
+    # Qwen models (use 4096 as reasonable default)
+    "qwen-2.5-7b": 4096,
+    "qwen-2.5-7b-instruct": 4096,
 }
 
 def count_tokens(model_name, text):

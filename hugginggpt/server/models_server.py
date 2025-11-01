@@ -21,15 +21,15 @@ import io
 from torchvision import transforms
 import torch
 import torchaudio
-from speechbrain.pretrained import WaveformEnhancement
+from speechbrain.inference import WaveformEnhancement
 import joblib
-from huggingface_hub import hf_hub_url, cached_download
+from huggingface_hub import hf_hub_url, hf_hub_download
 from transformers import AutoImageProcessor, TimesformerForVideoClassification
 from transformers import MaskFormerFeatureExtractor, MaskFormerForInstanceSegmentation, AutoFeatureExtractor
 from controlnet_aux import OpenposeDetector, MLSDdetector, HEDdetector, CannyDetector, MidasDetector
 from controlnet_aux.open_pose.body import Body
 from controlnet_aux.mlsd.models.mbv2_mlsd_large import MobileV2_MLSD_Large
-from controlnet_aux.hed import Network
+# from controlnet_aux.hed import Network  # Deprecated import
 from transformers import DPTForDepthEstimation, DPTFeatureExtractor
 import warnings
 import time
@@ -90,30 +90,10 @@ def load_pipes(local_deployment):
                 "tokenizer": AutoTokenizer.from_pretrained(f"{local_fold}/nlpconnect/vit-gpt2-image-captioning"),
                 "device": device
             },
-            # "Salesforce/blip-image-captioning-large": {
-            #     "model": BlipForConditionalGeneration.from_pretrained(f"{local_fold}/Salesforce/blip-image-captioning-large"),
-            #     "processor": BlipProcessor.from_pretrained(f"{local_fold}/Salesforce/blip-image-captioning-large"),
-            #     "device": device
-            # },
             "damo-vilab/text-to-video-ms-1.7b": {
                 "model": DiffusionPipeline.from_pretrained(f"{local_fold}/damo-vilab/text-to-video-ms-1.7b", torch_dtype=torch.float16, variant="fp16"),
                 "device": device
             },
-            # "facebook/maskformer-swin-large-ade": {
-            #     "model": MaskFormerForInstanceSegmentation.from_pretrained(f"{local_fold}/facebook/maskformer-swin-large-ade"),
-            #     "feature_extractor" : AutoFeatureExtractor.from_pretrained("facebook/maskformer-swin-large-ade"),
-            #     "device": device
-            # },
-            # "microsoft/trocr-base-printed": {
-            #     "processor": TrOCRProcessor.from_pretrained(f"{local_fold}/microsoft/trocr-base-printed"),
-            #     "model": VisionEncoderDecoderModel.from_pretrained(f"{local_fold}/microsoft/trocr-base-printed"),
-            #     "device": device
-            # },
-            # "microsoft/trocr-base-handwritten": {
-            #     "processor": TrOCRProcessor.from_pretrained(f"{local_fold}/microsoft/trocr-base-handwritten"),
-            #     "model": VisionEncoderDecoderModel.from_pretrained(f"{local_fold}/microsoft/trocr-base-handwritten"),
-            #     "device": device
-            # },
             "JorisCos/DCCRNet_Libri1Mix_enhsingle_16k": {
                 "model": BaseModel.from_pretrained("JorisCos/DCCRNet_Libri1Mix_enhsingle_16k"),
                 "device": device
@@ -126,29 +106,10 @@ def load_pipes(local_deployment):
                 "model": DiffusionPipeline.from_pretrained(f"{local_fold}/lambdalabs/sd-image-variations-diffusers"), #torch_dtype=torch.float16
                 "device": device
             },
-            # "CompVis/stable-diffusion-v1-4": {
-            #     "model": DiffusionPipeline.from_pretrained(f"{local_fold}/CompVis/stable-diffusion-v1-4"),
-            #     "device": device
-            # },
-            # "stabilityai/stable-diffusion-2-1": {
-            #     "model": DiffusionPipeline.from_pretrained(f"{local_fold}/stabilityai/stable-diffusion-2-1"),
-            #     "device": device
-            # },
             "runwayml/stable-diffusion-v1-5": {
                 "model": DiffusionPipeline.from_pretrained(f"{local_fold}/runwayml/stable-diffusion-v1-5"),
                 "device": device
             },
-            # "microsoft/speecht5_tts":{
-            #     "processor": SpeechT5Processor.from_pretrained(f"{local_fold}/microsoft/speecht5_tts"),
-            #     "model": SpeechT5ForTextToSpeech.from_pretrained(f"{local_fold}/microsoft/speecht5_tts"),
-            #     "vocoder":  SpeechT5HifiGan.from_pretrained(f"{local_fold}/microsoft/speecht5_hifigan"),
-            #     "embeddings_dataset": load_dataset(f"{local_fold}/Matthijs/cmu-arctic-xvectors", split="validation"),
-            #     "device": device
-            # },
-            # "speechbrain/mtl-mimic-voicebank": {
-            #     "model": WaveformEnhancement.from_hparams(source="speechbrain/mtl-mimic-voicebank", savedir="models/mtl-mimic-voicebank"),
-            #     "device": device
-            # },
             "microsoft/speecht5_vc":{
                 "processor": SpeechT5Processor.from_pretrained(f"{local_fold}/microsoft/speecht5_vc"),
                 "model": SpeechT5ForSpeechToSpeech.from_pretrained(f"{local_fold}/microsoft/speecht5_vc"),
@@ -156,14 +117,6 @@ def load_pipes(local_deployment):
                 "embeddings_dataset": load_dataset(f"{local_fold}/Matthijs/cmu-arctic-xvectors", split="validation"),
                 "device": device
             },
-            # "julien-c/wine-quality": {
-            #     "model": joblib.load(cached_download(hf_hub_url("julien-c/wine-quality", "sklearn_model.joblib")))
-            # },
-            # "facebook/timesformer-base-finetuned-k400": {
-            #     "processor": AutoImageProcessor.from_pretrained(f"{local_fold}/facebook/timesformer-base-finetuned-k400"),
-            #     "model": TimesformerForVideoClassification.from_pretrained(f"{local_fold}/facebook/timesformer-base-finetuned-k400"),
-            #     "device": device
-            # },
             "facebook/maskformer-swin-base-coco": {
                 "feature_extractor": MaskFormerFeatureExtractor.from_pretrained(f"{local_fold}/facebook/maskformer-swin-base-coco"),
                 "model": MaskFormerForInstanceSegmentation.from_pretrained(f"{local_fold}/facebook/maskformer-swin-base-coco"),
@@ -178,10 +131,6 @@ def load_pipes(local_deployment):
 
     if local_deployment in ["full", "standard"]:
         standard_pipes = {
-            # "superb/wav2vec2-base-superb-ks": {
-            #     "model": pipeline(task="audio-classification", model=f"{local_fold}/superb/wav2vec2-base-superb-ks"), 
-            #     "device": device
-            # },
             "openai/whisper-base": {
                 "model": pipeline(task="automatic-speech-recognition", model=f"{local_fold}/openai/whisper-base"), 
                 "device": device
@@ -194,10 +143,6 @@ def load_pipes(local_deployment):
                 "model": pipeline(task="depth-estimation", model=f"{local_fold}/Intel/dpt-large"), 
                 "device": device
             },
-            # "microsoft/beit-base-patch16-224-pt22k-ft22k": {
-            #     "model": pipeline(task="image-classification", model=f"{local_fold}/microsoft/beit-base-patch16-224-pt22k-ft22k"), 
-            #     "device": device
-            # },
             "facebook/detr-resnet-50-panoptic": {
                 "model": pipeline(task="image-segmentation", model=f"{local_fold}/facebook/detr-resnet-50-panoptic"), 
                 "device": device
@@ -206,54 +151,10 @@ def load_pipes(local_deployment):
                 "model": pipeline(task="object-detection", model=f"{local_fold}/facebook/detr-resnet-101"), 
                 "device": device
             },
-            # "openai/clip-vit-large-patch14": {
-            #     "model": pipeline(task="zero-shot-image-classification", model=f"{local_fold}/openai/clip-vit-large-patch14"), 
-            #     "device": device
-            # },
             "google/owlvit-base-patch32": {
                 "model": pipeline(task="zero-shot-object-detection", model=f"{local_fold}/google/owlvit-base-patch32"), 
                 "device": device
             },
-            # "microsoft/DialoGPT-medium": {
-            #     "model": pipeline(task="conversational", model=f"{local_fold}/microsoft/DialoGPT-medium"), 
-            #     "device": device
-            # },
-            # "bert-base-uncased": {
-            #     "model": pipeline(task="fill-mask", model=f"{local_fold}/bert-base-uncased"), 
-            #     "device": device
-            # },
-            # "deepset/roberta-base-squad2": {
-            #     "model": pipeline(task = "question-answering", model=f"{local_fold}/deepset/roberta-base-squad2"), 
-            #     "device": device
-            # },
-            # "facebook/bart-large-cnn": {
-            #     "model": pipeline(task="summarization", model=f"{local_fold}/facebook/bart-large-cnn"), 
-            #     "device": device
-            # },
-            # "google/tapas-base-finetuned-wtq": {
-            #     "model": pipeline(task="table-question-answering", model=f"{local_fold}/google/tapas-base-finetuned-wtq"), 
-            #     "device": device
-            # },
-            # "distilbert-base-uncased-finetuned-sst-2-english": {
-            #     "model": pipeline(task="text-classification", model=f"{local_fold}/distilbert-base-uncased-finetuned-sst-2-english"), 
-            #     "device": device
-            # },
-            # "gpt2": {
-            #     "model": pipeline(task="text-generation", model="gpt2"), 
-            #     "device": device
-            # },
-            # "mrm8488/t5-base-finetuned-question-generation-ap": {
-            #     "model": pipeline(task="text2text-generation", model=f"{local_fold}/mrm8488/t5-base-finetuned-question-generation-ap"), 
-            #     "device": device
-            # },
-            # "Jean-Baptiste/camembert-ner": {
-            #     "model": pipeline(task="token-classification", model=f"{local_fold}/Jean-Baptiste/camembert-ner", aggregation_strategy="simple"), 
-            #     "device": device
-            # },
-            # "t5-base": {
-            #     "model": pipeline(task="translation", model=f"{local_fold}/t5-base"), 
-            #     "device": device
-            # },
             "impira/layoutlm-document-qa": {
                 "model": pipeline(task="document-question-answering", model=f"{local_fold}/impira/layoutlm-document-qa"), 
                 "device": device
@@ -280,7 +181,8 @@ def load_pipes(local_deployment):
             return MLSDdetector(model)
 
 
-        hed_network = Network(f"{local_fold}/lllyasviel/ControlNet/annotator/ckpts/network-bsds500.pth")
+        # Initialize HED detector with local weights
+        hed_detector = HEDdetector(f"{local_fold}/lllyasviel/ControlNet/annotator/ckpts/network-bsds500.pth")
 
         controlnet_sd_pipes = {
             "openpose-control": {
@@ -290,13 +192,13 @@ def load_pipes(local_deployment):
                 "model": mlsd_control_network()
             },
             "hed-control": {
-                "model": HEDdetector(hed_network)
+                "model": hed_detector  # Use local HED detector
             },
             "scribble-control": {
-                "model": HEDdetector(hed_network)
+                "model": hed_detector  # Use local HED detector
             },
             "midas-control": {
-                "model": MidasDetector(model_path=f"{local_fold}/lllyasviel/ControlNet/annotator/ckpts/dpt_hybrid-midas-501f0c75.pt")
+                "model": MidasDetector(DPTForDepthEstimation.from_pretrained(f"{local_fold}/Intel/dpt-large"))
             },
             "canny-control": {
                 "model": CannyDetector()
@@ -382,7 +284,7 @@ def models(model_id):
     
     result = None
     try:
-        # text to video
+        # text to video (FULL)
         if model_id == "damo-vilab/text-to-video-ms-1.7b":
             pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
             # pipe.enable_model_cpu_offload()
@@ -417,7 +319,7 @@ def models(model_id):
             control.save(f"public/images/{file_name}.png")
             result = {"path": f"/images/{file_name}.png"}
 
-        # image to image
+        # image to image (FULL)
         if model_id == "lambdalabs/sd-image-variations-diffusers":
             im = load_image(request.get_json()["img_url"])
             file_name = str(uuid.uuid4())[:4]
@@ -440,35 +342,20 @@ def models(model_id):
             result = {"path": f"/images/{file_name}.jpg"}
 
         # image to text
-        if model_id == "Salesforce/blip-image-captioning-large":
-            raw_image = load_image(request.get_json()["img_url"]).convert('RGB')
-            text = request.get_json()["text"]
-            inputs = pipes[model_id]["processor"](raw_image, return_tensors="pt").to(pipes[model_id]["device"])
-            out = pipe.generate(**inputs)
-            caption = pipes[model_id]["processor"].decode(out[0], skip_special_tokens=True)
-            result = {"generated text": caption}
         if model_id == "ydshieh/vit-gpt2-coco-en":
             img_url = request.get_json()["img_url"]
             generated_text = pipe(img_url)[0]['generated_text']
             result = {"generated text": generated_text}
-        if model_id == "nlpconnect/vit-gpt2-image-captioning":
+        if model_id == "nlpconnect/vit-gpt2-image-captioning": # (FULL)
             image = load_image(request.get_json()["img_url"]).convert("RGB")
             pixel_values = pipes[model_id]["feature_extractor"](images=image, return_tensors="pt").pixel_values
             pixel_values = pixel_values.to(pipes[model_id]["device"])
             generated_ids = pipe.generate(pixel_values, **{"max_length": 200, "num_beams": 1})
             generated_text = pipes[model_id]["tokenizer"].batch_decode(generated_ids, skip_special_tokens=True)[0]
             result = {"generated text": generated_text}
-        # image to text: OCR
-        if model_id == "microsoft/trocr-base-printed" or  model_id == "microsoft/trocr-base-handwritten":
-            image = load_image(request.get_json()["img_url"]).convert("RGB")
-            pixel_values = pipes[model_id]["processor"](image, return_tensors="pt").pixel_values
-            pixel_values = pixel_values.to(pipes[model_id]["device"])
-            generated_ids = pipe.generate(pixel_values)
-            generated_text = pipes[model_id]["processor"].batch_decode(generated_ids, skip_special_tokens=True)[0]
-            result = {"generated text": generated_text}
 
         # text to image
-        if model_id == "runwayml/stable-diffusion-v1-5":
+        if model_id == "runwayml/stable-diffusion-v1-5": # (FULL)
             file_name = str(uuid.uuid4())[:4]
             text = request.get_json()["text"]
             out = pipe(prompt=text)
@@ -521,23 +408,23 @@ def models(model_id):
             result = {"path": f"/images/{name}.jpg"}
 
         # TTS
-        if model_id == "espnet/kan-bayashi_ljspeech_vits":
+        if model_id == "espnet/kan-bayashi_ljspeech_vits": # (FULL)
             text = request.get_json()["text"]
             wav = pipe(text)["wav"]
             name = str(uuid.uuid4())[:4]
             sf.write(f"public/audios/{name}.wav", wav.cpu().numpy(), pipe.fs, "PCM_16")
             result = {"path": f"/audios/{name}.wav"}
 
-        if model_id == "microsoft/speecht5_tts":
-            text = request.get_json()["text"]
-            inputs = pipes[model_id]["processor"](text=text, return_tensors="pt")
-            embeddings_dataset = pipes[model_id]["embeddings_dataset"]
-            speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0).to(pipes[model_id]["device"])
-            pipes[model_id]["vocoder"].to(pipes[model_id]["device"])
-            speech = pipe.generate_speech(inputs["input_ids"].to(pipes[model_id]["device"]), speaker_embeddings, vocoder=pipes[model_id]["vocoder"])
-            name = str(uuid.uuid4())[:4]
-            sf.write(f"public/audios/{name}.wav", speech.cpu().numpy(), samplerate=16000)
-            result = {"path": f"/audios/{name}.wav"}
+        # if model_id == "microsoft/speecht5_tts":
+        #     text = request.get_json()["text"]
+        #     inputs = pipes[model_id]["processor"](text=text, return_tensors="pt")
+        #     embeddings_dataset = pipes[model_id]["embeddings_dataset"]
+        #     speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0).to(pipes[model_id]["device"])
+        #     pipes[model_id]["vocoder"].to(pipes[model_id]["device"])
+        #     speech = pipe.generate_speech(inputs["input_ids"].to(pipes[model_id]["device"]), speaker_embeddings, vocoder=pipes[model_id]["vocoder"])
+        #     name = str(uuid.uuid4())[:4]
+        #     sf.write(f"public/audios/{name}.wav", speech.cpu().numpy(), samplerate=16000)
+        #     result = {"path": f"/audios/{name}.wav"}
 
         # ASR
         if model_id == "openai/whisper-base" or model_id == "microsoft/speecht5_asr":
@@ -585,7 +472,7 @@ def models(model_id):
             image.save(f"public/images/{name}.jpg")
             result = {"path": f"/images/{name}.jpg"}
 
-        if model_id == "facebook/maskformer-swin-base-coco" or model_id == "facebook/maskformer-swin-large-ade":
+        if model_id == "facebook/maskformer-swin-base-coco":
             image = load_image(request.get_json()["img_url"])
             inputs = pipes[model_id]["feature_extractor"](images=image, return_tensors="pt").to(pipes[model_id]["device"])
             outputs = pipe(**inputs)

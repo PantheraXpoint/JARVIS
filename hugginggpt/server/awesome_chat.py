@@ -123,11 +123,13 @@ if inference_mode!="huggingface":
     Model_Server = "http://" + config["local_inference_endpoint"]["host"] + ":" + str(config["local_inference_endpoint"]["port"])
     message = f"The server of local inference endpoints is not running, please start it first. (or using `inference_mode: huggingface` in {args.config} for a feature-limited experience)"
     try:
-        r = requests.get(Model_Server + "/running")
+        r = requests.get(Model_Server + "/running", timeout=2)
         if r.status_code != 200:
-            raise ValueError(message)
-    except:
-        raise ValueError(message)
+            logger.warning(f"Local models server check failed (status {r.status_code}). This is OK for decision-only mode with HuggingFace.")
+            # Don't raise error - allow decision-only mode to work without local server
+    except Exception as e:
+        logger.warning(f"Local models server not reachable at {Model_Server}. Error: {e}. This is OK if using decision-only mode or HuggingFace mode.")
+        # Don't raise error - allow decision-only mode to work without local server
 
 
 parse_task_demos_or_presteps = open(config["demos_or_presteps"]["parse_task"], "r").read()
@@ -339,7 +341,7 @@ def parse_task(context, input, api_key, api_type, api_endpoint):
     data = {
         "model": LLM,
         "messages": messages,
-        "temperature": 0,
+        "temperature": 0.1,  # Use small positive value instead of 0
         "logit_bias": {item: config["logit_bias"]["parse_task"] for item in task_parsing_highlight_ids},
         "api_key": api_key,
         "api_type": api_type,
@@ -365,7 +367,7 @@ def choose_model(input, task, metas, api_key, api_type, api_endpoint):
     data = {
         "model": LLM,
         "messages": messages,
-        "temperature": 0,
+        "temperature": 0.1,  # Use small positive value instead of 0
         "logit_bias": {item: config["logit_bias"]["choose_model"] for item in choose_model_highlight_ids}, # 5
         "api_key": api_key,
         "api_type": api_type,
@@ -390,7 +392,7 @@ def response_results(input, results, api_key, api_type, api_endpoint):
     data = {
         "model": LLM,
         "messages": messages,
-        "temperature": 0,
+        "temperature": 0.1,  # Use small positive value instead of 0
         "api_key": api_key,
         "api_type": api_type,
         "api_endpoint": api_endpoint
@@ -717,6 +719,126 @@ def collect_result(command, choose, inference_result):
     return result
 
 
+def run_task_decisions_only(input, command, results, api_key, api_type, api_endpoint):
+    """
+    Decision-only version: Only performs task planning and model selection, 
+    but does NOT execute models. Returns selection decisions.
+    """
+    id = command["id"]
+    args = command["args"]
+    task = command["task"]
+    deps = command["dep"]
+    
+    logger.debug(f"[DECISIONS ONLY] Processing task: {id} - {task}")
+    
+    # Resolve args (same as normal run_task but without execution)
+    for resource in ["image", "audio"]:
+        if resource in args and len(args[resource]) > 0 and not args[resource].startswith("http"):
+            path = args[resource]
+            if not path.startswith("public/") and not path.startswith("/"):
+                path = f"public/{path}"
+            args[resource] = path
+    
+    if "-text-to-image" in command['task'] and "text" not in args:
+        control = task.split("-")[0]
+        if control == "seg":
+            task = "image-segmentation"
+            command['task'] = task
+        elif control == "depth":
+            task = "depth-estimation"
+            command['task'] = task
+        else:
+            task = f"{control}-control"
+    
+    command["args"] = args
+    
+    # Model selection logic (same as run_task)
+    if task.endswith("-text-to-image") or task.endswith("-control"):
+        if inference_mode != "huggingface":
+            if task.endswith("-text-to-image"):
+                control = task.split("-")[0]
+                best_model_id = f"lllyasviel/sd-controlnet-{control}"
+            else:
+                best_model_id = task
+            hosted_on = "local"
+            reason = "ControlNet is the best model for this task."
+            choose = {"id": best_model_id, "reason": reason}
+        else:
+            choose = {"id": "N/A", "reason": "ControlNet requires local deployment"}
+            results[id] = {"task": command, "choose model result": choose, "status": "unavailable"}
+            return False
+            
+    elif task in ["summarization", "translation", "conversational", "text-generation", "text2text-generation"]:
+        best_model_id = "ChatGPT"
+        reason = "ChatGPT performs well on some NLP tasks as well."
+        choose = {"id": best_model_id, "reason": reason}
+        
+    else:
+        if task not in MODELS_MAP:
+            choose = {"id": "N/A", "reason": f"Task {task} not found in available tasks"}
+            results[id] = {"task": command, "choose model result": choose, "status": "unavailable"}
+            return False
+        
+        candidates = MODELS_MAP[task][:10]
+        all_avaliable_models = get_avaliable_models(candidates, config["num_candidate_models"])
+        all_avaliable_model_ids = all_avaliable_models["local"] + all_avaliable_models["huggingface"]
+        
+        # For decision-only mode: if availability check fails, use all candidates (models exist in catalog)
+        if len(all_avaliable_model_ids) == 0:
+            logger.info(f"[DECISIONS] No models passed availability check, using all candidates for decision-making")
+            all_avaliable_model_ids = [c["id"] for c in candidates[:config["num_candidate_models"]]]
+            # Mark all as "huggingface" for decision purposes (actual availability unknown)
+            all_avaliable_models["huggingface"] = all_avaliable_model_ids.copy()
+            
+        if len(all_avaliable_model_ids) == 1:
+            best_model_id = all_avaliable_model_ids[0]
+            hosted_on = "local" if best_model_id in all_avaliable_models["local"] else "huggingface"
+            reason = "Only one model available."
+            choose = {"id": best_model_id, "reason": reason, "hosted_on": hosted_on}
+        else:
+            cand_models_info = [
+                {
+                    "id": model["id"],
+                    "inference endpoint": "local" if model["id"] in all_avaliable_models["local"] else "huggingface",
+                    "likes": model.get("likes"),
+                    "description": model.get("description", "")[:config["max_description_length"]],
+                    "tags": model.get("meta").get("tags") if model.get("meta") else None,
+                }
+                for model in candidates
+                if model["id"] in all_avaliable_model_ids
+            ]
+            
+            choose_str = choose_model(input, command, cand_models_info, api_key, api_type, api_endpoint)
+            logger.debug(f"[DECISIONS] LLM selection response: {choose_str}")
+            try:
+                choose = json.loads(choose_str)
+                reason = choose["reason"]
+                best_model_id = choose["id"]
+                hosted_on = "local" if best_model_id in all_avaliable_models["local"] else "huggingface"
+                choose["hosted_on"] = hosted_on
+            except Exception as e:
+                logger.warning(f"the response [ {choose_str} ] is not a valid JSON, try to find the model id and reason in the response.")
+                choose_str = find_json(choose_str)
+                best_model_id, reason, choose = get_id_reason(choose_str)
+                hosted_on = "local" if best_model_id in all_avaliable_models["local"] else "huggingface"
+                choose["hosted_on"] = hosted_on
+                choose["reason"] = reason
+    
+    # Store decision WITHOUT execution
+    selected_model_id = choose.get("id", "N/A")
+    hosted_on_val = choose.get("hosted_on", "unknown") if isinstance(choose, dict) else "unknown"
+    
+    results[id] = {
+        "task": command,
+        "choose model result": choose,
+        "selected_model_id": selected_model_id,
+        "hosted_on": hosted_on_val,
+        "status": "selected_not_executed",
+        "available_candidates_count": len(all_avaliable_model_ids) if 'all_avaliable_model_ids' in locals() else 1
+    }
+    logger.info(f"[DECISIONS] Task {id} ({task}): Selected {selected_model_id} from {hosted_on_val}")
+    return True
+
 def run_task(input, command, results, api_key, api_type, api_endpoint):
     id = command["id"]
     args = command["args"]
@@ -776,8 +898,12 @@ def run_task(input, command, results, api_key, api_type, api_endpoint):
             args["text"] = text
 
     for resource in ["image", "audio"]:
-        if resource in args and not args[resource].startswith("public/") and len(args[resource]) > 0 and not args[resource].startswith("http"):
-            args[resource] = f"public/{args[resource]}"
+        if resource in args and len(args[resource]) > 0 and not args[resource].startswith("http"):
+            # Only add public/ prefix if not already present and not absolute path
+            path = args[resource]
+            if not path.startswith("public/") and not path.startswith("/"):
+                path = f"public/{path}"
+            args[resource] = path
     
     if "-text-to-image" in command['task'] and "text" not in args:
         logger.debug("control-text-to-image task, but text is empty, so we use control-generation instead.")
@@ -888,7 +1014,15 @@ def run_task(input, command, results, api_key, api_type, api_endpoint):
     results[id] = collect_result(command, choose, inference_result)
     return True
 
-def chat_huggingface(messages, api_key, api_type, api_endpoint, return_planning = False, return_results = False):
+def chat_huggingface(messages, api_key, api_type, api_endpoint, return_planning = False, return_results = False, return_decisions = False):
+    """
+    Main orchestrator function.
+    
+    Args:
+        return_planning: If True, return only task planning JSON
+        return_results: If True, return execution results without final response
+        return_decisions: If True, return model selection decisions WITHOUT executing models
+    """
     start = time.time()
     context = messages[:-1]
     input = messages[-1]["content"]
@@ -905,6 +1039,15 @@ def chat_huggingface(messages, api_key, api_type, api_endpoint, return_planning 
     logger.info(task_str)
 
     try:
+        # Clean up JSON - remove trailing commas and fix common issues
+        import re
+        # Fix specific issues with spaces around commas
+        task_str = task_str.replace(' }} , ', '}}, ')
+        task_str = task_str.replace(' }} ,', '}},')
+        task_str = task_str.replace('}} ,', '}},')
+        # Remove any trailing commas before closing brackets/braces
+        task_str = re.sub(r',\s*([}\]])', r'\1', task_str)
+        
         tasks = json.loads(task_str)
     except Exception as e:
         logger.debug(e)
@@ -933,6 +1076,41 @@ def chat_huggingface(messages, api_key, api_type, api_endpoint, return_planning 
     threads = []
     tasks = tasks[:]
     d = dict()
+    
+    # Decision-only mode: Only do model selection, no execution
+    if return_decisions:
+        logger.info("[DECISIONS MODE] Collecting model selection decisions without execution...")
+        # Process tasks sequentially (no dependencies to wait for)
+        for task in tasks:
+            run_task_decisions_only(input, task, d, api_key, api_type, api_endpoint)
+        results = d.copy()
+        logger.info(f"[DECISIONS MODE] Collected {len(results)} model selections")
+        
+        # Format output for decisions
+        decisions_output = {
+            "input": input,
+            "planned_tasks": tasks,
+            "model_selections": {},
+            "summary": {
+                "total_tasks": len(tasks),
+                "tasks_with_selections": len([r for r in results.values() if r.get("status") == "selected_not_executed"]),
+                "tasks_unavailable": len([r for r in results.values() if r.get("status") == "unavailable"])
+            }
+        }
+        
+        for task_id, result in sorted(results.items()):
+            decisions_output["model_selections"][task_id] = {
+                "task": result["task"],
+                "selected_model": result.get("selected_model_id"),
+                "hosted_on": result.get("hosted_on"),
+                "reason": result.get("choose model result", {}).get("reason"),
+                "status": result.get("status"),
+                "available_candidates": result.get("available_candidates_count")
+            }
+        
+        return {"decisions": decisions_output, "raw_results": results}
+    
+    # Normal execution mode
     retry = 0
     while True:
         num_thread = len(threads)
@@ -1055,8 +1233,11 @@ def server():
         api_endpoint = data.get("api_endpoint", API_ENDPOINT)
         api_type = data.get("api_type", API_TYPE)
         if api_key is None or api_type is None or api_endpoint is None:
-            return jsonify({"error": "Please provide api_key, api_type and api_endpoint"}) 
-        response = chat_huggingface(messages, api_key, api_type, api_endpoint)
+            return jsonify({"error": "Please provide api_key, api_type and api_endpoint"})
+        
+        # Support decision-only mode via query parameter or request body
+        return_decisions = data.get("return_decisions", True)
+        response = chat_huggingface(messages, api_key, api_type, api_endpoint, return_decisions=return_decisions)
         return jsonify(response)
     print("server running...")
     waitress.serve(app, host=host, port=port)

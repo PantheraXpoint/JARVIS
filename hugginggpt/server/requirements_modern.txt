@@ -1,0 +1,38 @@
+# Modern requirements for JARVIS + Qwen 2.5 7B
+# Based on original requirements.txt - only base libraries, no audio/vision specific packages
+
+# Core ML libraries (PyTorch FIXED VERSIONS - install first)
+#torch==2.6.0
+#torchvision==0.21.0
+#torchaudio==2.6.0
+
+# JARVIS specific (from original requirements.txt)
+diffusers
+transformers
+controlnet_aux
+tiktoken
+pydub
+
+# Web framework (from original requirements.txt)
+flask
+flask_cors
+waitress
+
+# Data processing (from original requirements.txt)
+datasets
+timm
+typeguard
+pytesseract
+accelerate
+
+# Gradio for UI (from original requirements.txt)
+gradio
+
+# Additional packages (from original requirements.txt)
+numpy
+pillow
+requests
+scipy
+
+# Optional: For better performance (install after PyTorch to avoid conflicts)
+# xformers  # Install with: pip install xformers --no-deps

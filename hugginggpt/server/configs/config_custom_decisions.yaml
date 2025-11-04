@@ -47,25 +47,23 @@ logit_bias:
   parse_task: 0.1
   choose_model: 5
 
-# Prompt templates - DYNAMIC TASK LIST (loaded from custom API)
+# Prompt templates - NEW PIPELINE-BASED TASK PLANNING FORMAT (stored as JSON files)
 tprompt:
-  parse_task: >-
-    #1 Task Planning Stage: The AI assistant can parse user input to several tasks: [{"task": task, "id": task_id, "dep": dependency_task_id, "args": {"image": image_url}}]. The "dep" field denotes the ids of the previous prerequisite tasks that must run first for logical ordering (e.g., object-detection-general before face-detection). CRITICAL: All tasks MUST use the EXACT SAME original image path provided by the user. DO NOT use "<GENERATED>" tags - they are NOT applicable here. All tasks analyze the same image and produce text outputs (labels, classifications, bounding boxes). The "args" field must only contain "image" with the original image path (e.g., "/examples/a.jpg" or "public/a.jpg"). NEVER use "<GENERATED>-id" in image paths. The task MUST be selected from the following options: [TASKS_LIST_WILL_BE_REPLACED_DYNAMICALLY]. There may be multiple tasks of the same type. Think step by step about all the tasks needed to resolve the user's request. Parse out as few tasks as possible while ensuring that the user request can be resolved. Pay attention to the dependencies and order among tasks. If the user input can't be parsed, you need to reply empty JSON [].
+  parse_task: demos/system_prompt_parse_task.json  # System prompt with task definitions and rules
   choose_model: >-
     #2 Model Selection Stage: Given the user request and the parsed tasks, the AI assistant helps the user to select a suitable model from a list of models to process the user request. The assistant should focus more on the description of the model and find the model that has the most potential to solve requests and tasks. Also, prefer models with local inference endpoints for speed and stability.
   response_results: >-
     #4 Response Generation Stage: With the task execution logs, the AI assistant needs to describe the process and inference results.
 
-# Demo files - CUSTOM VERSIONS with your API tasks
+# Demo files - NEW PIPELINE-BASED FORMAT with sensys examples
 demos_or_presteps:
-  parse_task: demos/demo_parse_task_custom.json  # Custom examples with your tasks
+  parse_task: demos/demo_parse_task_sensys_formatted.json  # Pipeline DAG format with scenario → tasks
   choose_model: demos/demo_choose_model_custom.json  # Same structure, task names will be replaced
   response_results: demos/demo_response_results_custom.json  # Custom demo showing execution plan format
 
-# Prompt templates for different stages
+# Prompt templates for different stages (user-facing prompts)
 prompt:
-  parse_task: >-
-    The chat log [ {{context}} ] may contain the resources I mentioned. Now I input { {{input}} }. Pay attention to the input and output types of tasks and the dependencies between tasks. Consider logical ordering: for example, object-detection-general should typically run before face-detection or gender-classification, as detecting objects first helps locate people in the image.
+  parse_task: demos/user_prompt_parse_task.json  # User prompt template with scenario input
   choose_model: >-
     Please choose the most suitable model from {{metas}} for the task {{task}}. The output must be in a strict JSON format: {"id": "id", "reason": "your detail reasons for the choice"}.
   response_results: >-

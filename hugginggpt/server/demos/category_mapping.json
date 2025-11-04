@@ -1,0 +1,155 @@
+{
+  "total_categories": 16,
+  "total_examples": 37,
+  "categories": [
+    {
+      "index": 0,
+      "base_pipeline_id": "business-normal",
+      "num_examples": 2,
+      "example_ids": [
+        "business-normal-example-0",
+        "business-normal-example-1"
+      ]
+    },
+    {
+      "index": 1,
+      "base_pipeline_id": "business-with-fight",
+      "num_examples": 3,
+      "example_ids": [
+        "business-with-fight-example-0",
+        "business-with-fight-example-1",
+        "business-with-fight-example-2"
+      ]
+    },
+    {
+      "index": 2,
+      "base_pipeline_id": "business-with-fire",
+      "num_examples": 3,
+      "example_ids": [
+        "business-with-fire-example-0",
+        "business-with-fire-example-1",
+        "business-with-fire-example-2"
+      ]
+    },
+    {
+      "index": 3,
+      "base_pipeline_id": "business-with-human-fall",
+      "num_examples": 3,
+      "example_ids": [
+        "business-with-human-fall-example-0",
+        "business-with-human-fall-example-1",
+        "business-with-human-fall-example-2"
+      ]
+    },
+    {
+      "index": 4,
+      "base_pipeline_id": "campus-normal",
+      "num_examples": 3,
+      "example_ids": [
+        "campus-normal-example-0",
+        "campus-normal-example-1",
+        "campus-normal-example-2"
+      ]
+    },
+    {
+      "index": 5,
+      "base_pipeline_id": "campus-with-fight",
+      "num_examples": 2,
+      "example_ids": [
+        "campus-with-fight-example-0",
+        "campus-with-fight-example-1"
+      ]
+    },
+    {
+      "index": 6,
+      "base_pipeline_id": "campus-with-fire",
+      "num_examples": 2,
+      "example_ids": [
+        "campus-with-fire-example-0",
+        "campus-with-fire-example-1"
+      ]
+    },
+    {
+      "index": 7,
+      "base_pipeline_id": "campus-with-human-fall",
+      "num_examples": 3,
+      "example_ids": [
+        "campus-with-human-fall-example-0",
+        "campus-with-human-fall-example-1",
+        "campus-with-human-fall-example-2"
+      ]
+    },
+    {
+      "index": 8,
+      "base_pipeline_id": "factory-normal",
+      "num_examples": 2,
+      "example_ids": [
+        "factory-normal-example-0",
+        "factory-normal-example-1"
+      ]
+    },
+    {
+      "index": 9,
+      "base_pipeline_id": "factory-with-fight",
+      "num_examples": 2,
+      "example_ids": [
+        "factory-with-fight-example-0",
+        "factory-with-fight-example-1"
+      ]
+    },
+    {
+      "index": 10,
+      "base_pipeline_id": "factory-with-human-fall",
+      "num_examples": 2,
+      "example_ids": [
+        "factory-with-human-fall-example-0",
+        "factory-with-human-fall-example-1"
+      ]
+    },
+    {
+      "index": 11,
+      "base_pipeline_id": "traffic-with-accident",
+      "num_examples": 2,
+      "example_ids": [
+        "traffic-with-accident-example-0",
+        "traffic-with-accident-example-1"
+      ]
+    },
+    {
+      "index": 12,
+      "base_pipeline_id": "traffic-with-fight",
+      "num_examples": 2,
+      "example_ids": [
+        "traffic-with-fight-example-0",
+        "traffic-with-fight-example-1"
+      ]
+    },
+    {
+      "index": 13,
+      "base_pipeline_id": "traffic-with-fire",
+      "num_examples": 2,
+      "example_ids": [
+        "traffic-with-fire-example-0",
+        "traffic-with-fire-example-1"
+      ]
+    },
+    {
+      "index": 14,
+      "base_pipeline_id": "traffic-with-humans",
+      "num_examples": 2,
+      "example_ids": [
+        "traffic-with-humans-example-0",
+        "traffic-with-humans-example-1"
+      ]
+    },
+    {
+      "index": 15,
+      "base_pipeline_id": "traffic-with-no-humans",
+      "num_examples": 2,
+      "example_ids": [
+        "traffic-with-no-humans-example-0",
+        "traffic-with-no-humans-example-1"
+      ]
+    }
+  ]
+}

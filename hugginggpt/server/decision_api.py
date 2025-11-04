@@ -18,6 +18,8 @@ import argparse
 import yaml
 import re
 import copy
+import os
+import time
 
 # Import token utilities (same as original)
 try:
@@ -43,7 +45,7 @@ args = parser.parse_args()
 config = yaml.load(open(args.config, "r"), Loader=yaml.FullLoader)
 
 # API Configuration
-MODEL_API_BASE_URL = config.get("model_api_base_url", "http://143.248.55.143:8080")
+MODEL_API_BASE_URL = config.get("model_api_base_url", "http://143.248.55.143:8081")
 
 # LLM endpoint - ensure it has the full path
 llm_base = config.get("local", {}).get("endpoint", "http://localhost:8006")
@@ -58,16 +60,57 @@ else:
 LLM_MODEL = config.get("model", "qwen-2.5-7b-instruct")
 use_completion = config.get("use_completion", False)
 
-# Load prompt templates and demos (SAME as original)
-parse_task_demos_or_presteps = open(config["demos_or_presteps"]["parse_task"], "r").read()
-choose_model_demos_or_presteps = open(config["demos_or_presteps"]["choose_model"], "r").read()
-response_results_demos_or_presteps = open(config["demos_or_presteps"]["response_results"], "r").read()
+# Load prompt templates and demos - supports both string and JSON file formats
+def load_demos(filepath):
+    """Load demo/few-shot examples, handling content_array format"""
+    with open(filepath, "r") as f:
+        content = f.read()
+        # Try to parse as JSON to check for content_array format
+        try:
+            data = json.loads(content)
+            if isinstance(data, list):
+                # Process each message to handle content_array
+                for msg in data:
+                    if isinstance(msg, dict) and "content_array" in msg:
+                        # Join array into single string with newlines
+                        msg["content"] = "\n".join(msg["content_array"])
+                        del msg["content_array"]
+                return json.dumps(data)
+        except:
+            pass
+        # If not JSON or no content_array, return as-is
+        return content
 
-parse_task_prompt = config["prompt"]["parse_task"]
+parse_task_demos_or_presteps = load_demos(config["demos_or_presteps"]["parse_task"])
+choose_model_demos_or_presteps = load_demos(config["demos_or_presteps"]["choose_model"])
+response_results_demos_or_presteps = load_demos(config["demos_or_presteps"]["response_results"])
+
+# Load user prompts (supports both direct string and JSON file)
+def load_prompt_value(value):
+    """Load prompt value - if it's a file path, load from file; otherwise use as-is"""
+    if isinstance(value, str) and value.endswith('.json'):
+        with open(value, "r") as f:
+            data = json.load(f)
+            # If it's a dict with 'template' key, return the template
+            # If it's a dict with 'template_array' key, join into string
+            # If it's a dict with 'content' key (system prompt format), return content
+            # If it's a dict with 'content_array' key, join into string
+            # Otherwise return the whole thing as JSON string
+            if isinstance(data, dict):
+                if "template_array" in data:
+                    return "\n".join(data["template_array"])
+                elif "content_array" in data:
+                    return "\n".join(data["content_array"])
+                else:
+                    return data.get("template", data.get("content", json.dumps(data)))
+            return json.dumps(data)
+    return value
+
+parse_task_prompt = load_prompt_value(config["prompt"]["parse_task"])
 choose_model_prompt = config["prompt"]["choose_model"]
 response_results_prompt = config["prompt"]["response_results"]
 
-parse_task_tprompt = config["tprompt"]["parse_task"]
+parse_task_tprompt = load_prompt_value(config["tprompt"]["parse_task"])
 choose_model_tprompt = config["tprompt"]["choose_model"]
 response_results_tprompt = config["tprompt"]["response_results"]
 
@@ -87,6 +130,48 @@ MODELS_CACHE = {}
 # Flask app
 app = flask.Flask(__name__)
 CORS(app)
+
+# Global variable to track current request timestamp for prompt logging
+CURRENT_REQUEST_TIMESTAMP = None
+
+
+def save_prompt_to_file(messages, prompt_type, task_id=None):
+    """Save the complete prompt structure (messages array) to a JSON file
+    
+    Args:
+        messages: The complete messages array sent to LLM
+        prompt_type: Either "parse_task" or "choose_model"
+        task_id: Optional task ID for choose_model prompts
+    """
+    global CURRENT_REQUEST_TIMESTAMP
+    
+    if CURRENT_REQUEST_TIMESTAMP is None:
+        CURRENT_REQUEST_TIMESTAMP = time.strftime("%Y%m%d_%H%M%S")
+    
+    # Create prompt_logs directory
+    prompt_dir = f"prompt_logs/request_{CURRENT_REQUEST_TIMESTAMP}"
+    os.makedirs(prompt_dir, exist_ok=True)
+    
+    # Build filename
+    if prompt_type == "parse_task":
+        filename = f"{prompt_dir}/01_parse_task.json"
+    elif prompt_type == "choose_model" and task_id is not None:
+        filename = f"{prompt_dir}/02_choose_model_task_{task_id}.json"
+    else:
+        filename = f"{prompt_dir}/{prompt_type}.json"
+    
+    # Save with metadata
+    prompt_data = {
+        "timestamp": CURRENT_REQUEST_TIMESTAMP,
+        "prompt_type": prompt_type,
+        "task_id": task_id,
+        "messages": messages
+    }
+    
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(prompt_data, f, indent=2, ensure_ascii=False)
+    
+    logger.debug(f"Saved {prompt_type} prompt to: {filename}")
 
 
 def get_available_tasks():
@@ -247,40 +332,45 @@ def send_llm_request(messages, temperature=0.1, logit_bias=None):
         return None
 
 
-def parse_task(user_input, context=[], api_key=None, api_type=None, api_endpoint=None):
-    """Parse user input into tasks using LLM - EXACT SAME LOGIC as original"""
+def parse_task(user_input, context=[], objects_seen=None, api_key=None, api_type=None, api_endpoint=None):
+    """Parse user input into tasks using LLM
+    
+    Args:
+        user_input: The scene description
+        context: Previous conversation context (for multi-turn dialogs)
+        objects_seen: List of objects present in scene (or None to infer)
+        
+    Returns:
+        String containing JSON array of tasks
+    """
     available_tasks = get_available_tasks()
     if not available_tasks:
         return {"error": "No tasks available from API"}
     
-    # Build dynamic task list for prompt (replace in tprompt)
-    tasks_list = ", ".join([f'"{task}"' for task in available_tasks])
-    # Replace the task list in the prompt template
-    # Try custom placeholder first (for config_custom_decisions.yaml), then fallback to original
-    if "[TASKS_LIST_WILL_BE_REPLACED_DYNAMICALLY]" in parse_task_tprompt:
-        dynamic_tprompt = parse_task_tprompt.replace(
-            "[TASKS_LIST_WILL_BE_REPLACED_DYNAMICALLY]",
-            tasks_list
-        )
-    else:
-        # Fallback: replace original HuggingGPT task list (for backward compatibility)
-        dynamic_tprompt = parse_task_tprompt.replace(
-            'The task MUST be selected from the following options: "token-classification", "text2text-generation", "summarization", "translation", "question-answering", "conversational", "text-generation", "sentence-similarity", "tabular-classification", "object-detection", "image-classification", "image-to-image", "image-to-text", "text-to-image", "text-to-video", "visual-question-answering", "document-question-answering", "image-segmentation", "depth-estimation", "text-to-speech", "automatic-speech-recognition", "audio-to-audio", "audio-classification", "canny-control", "hed-control", "mlsd-control", "normal-control", "openpose-control", "canny-text-to-image", "depth-text-to-image", "hed-text-to-image", "mlsd-text-to-image", "normal-text-to-image", "openpose-text-to-image", "seg-text-to-image".',
-            f'The task MUST be selected from the following options: {tasks_list}.'
-        )
+    # No dynamic task list replacement needed anymore - system prompt is static
+    dynamic_tprompt = parse_task_tprompt
     
-    # SAME as original: Load few-shot examples
+    # Load few-shot examples
     demos_or_presteps = parse_task_demos_or_presteps
     messages = json.loads(demos_or_presteps)
     messages.insert(0, {"role": "system", "content": dynamic_tprompt})
 
-    # SAME as original: Context window trimming logic
+    # Context window trimming logic
     start = 0
     while start <= len(context):
         history = context[start:]
+        
+        # Handle objects_seen parameter
+        if objects_seen is not None:
+            objects_str = ", ".join(objects_seen) if isinstance(objects_seen, list) else str(objects_seen)
+        else:
+            objects_str = "infer from the scene description"
+        
+        # Build prompt with scenario format
         prompt = replace_slot(parse_task_prompt, {
             "input": user_input,
-            "context": history 
+            "context": history,
+            "objects_seen": objects_str
         })
         messages.append({"role": "user", "content": prompt})
         
@@ -293,16 +383,19 @@ def parse_task(user_input, context=[], api_key=None, api_type=None, api_endpoint
         messages.pop()
         start += 2
     
-    # SAME as original: Call with logit_bias
+    # Call with logit_bias
     logit_bias = None
     if HAS_TOKEN_UTILS and task_parsing_highlight_ids:
         logit_bias = {item: config.get("logit_bias", {}).get("parse_task", 0.1) for item in task_parsing_highlight_ids}
+    
+    # Save prompt structure before sending to LLM
+    save_prompt_to_file(messages, "parse_task")
     
     response = send_llm_request(messages, temperature=0.1, logit_bias=logit_bias)
     if not response:
         return {"error": "Failed to get LLM response"}
     
-    return response  # Return string, let caller parse (same as original)
+    return response  # Return string, let caller parse
 
 
 def unfold(tasks):
@@ -390,6 +483,10 @@ def choose_model_for_task(user_input, task_command, models, api_key=None, api_ty
     messages = json.loads(demos_or_presteps)
     messages.insert(0, {"role": "system", "content": choose_model_tprompt})
     messages.append({"role": "user", "content": prompt})
+    
+    # Save prompt structure before sending to LLM (include task_id for filename)
+    task_id = task_command.get("id", "unknown")
+    save_prompt_to_file(messages, "choose_model", task_id=task_id)
     
     # SAME as original: Call with logit_bias
     logit_bias = None
@@ -504,6 +601,131 @@ def process_decisions(user_input, tasks, api_key=None, api_type=None, api_endpoi
     return results
 
 
+def load_all_examples():
+    """Load all examples from local file or API"""
+    # Try to load from local file first (faster)
+    try:
+        with open("demos/all_examples.json", "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        pass
+    
+    # If local file doesn't exist, fetch from API
+    try:
+        response = requests.post(
+            f"{MODEL_API_BASE_URL}/query/get_examples_for_task_pipelines",
+            headers={"Content-Type": "application/json"},
+            json={"task_id": "", "scenario_id": "", "num_examples": 100},
+            timeout=10
+        )
+        if response.status_code == 200:
+            examples = response.json()
+            # Save to local file for future use
+            with open("demos/all_examples.json", "w") as f:
+                json.dump(examples, f, indent=2)
+            return examples
+        else:
+            logger.error(f"Failed to fetch examples from API: HTTP {response.status_code}")
+            return []
+    except Exception as e:
+        logger.error(f"Error fetching examples from API: {e}")
+        return []
+
+
+def load_category_mapping():
+    """Load category mapping from file"""
+    try:
+        with open("demos/category_mapping.json", "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logger.error("Category mapping file not found. Run the category mapping script first.")
+        return None
+
+
+def build_few_shot_examples(category_indices, num_examples_per_category, all_examples):
+    """Build few-shot examples from specified categories
+    
+    Args:
+        category_indices: List of category indices to use
+        num_examples_per_category: Number of examples to take from each category
+        all_examples: List of all available examples
+        
+    Returns:
+        List of few-shot examples formatted for the prompt
+    """
+    category_mapping = load_category_mapping()
+    if not category_mapping:
+        return []
+    
+    # Group examples by base_pipeline_id
+    examples_by_category = {}
+    for example in all_examples:
+        base_id = example.get("base_pipeline_id")
+        if base_id not in examples_by_category:
+            examples_by_category[base_id] = []
+        examples_by_category[base_id].append(example)
+    
+    # Build few-shot examples
+    few_shot_examples = []
+    for cat_idx in category_indices:
+        # Find category by index
+        category = next((c for c in category_mapping["categories"] if c["index"] == cat_idx), None)
+        if not category:
+            logger.warning(f"Category index {cat_idx} not found")
+            continue
+        
+        base_id = category["base_pipeline_id"]
+        examples = examples_by_category.get(base_id, [])
+        
+        # Take up to num_examples_per_category (or all if fewer available)
+        num_to_take = min(num_examples_per_category, len(examples))
+        for example in examples[:num_to_take]:
+            few_shot_examples.append(example)
+    
+    return few_shot_examples
+
+
+def format_few_shot_for_prompt(few_shot_examples):
+    """Format few-shot examples into prompt messages
+    
+    Args:
+        few_shot_examples: List of example objects with scenario and tasks
+        
+    Returns:
+        List of message dictionaries (user/assistant pairs)
+    """
+    messages = []
+    
+    for example in few_shot_examples:
+        scenario = example.get("scenario", {})
+        tasks = example.get("tasks", [])
+        
+        # Build user message (scenario input)
+        objects_seen = scenario.get("objects-seen", [])
+        description = scenario.get("sample-description", "")
+        
+        user_content = f"Given the following scenario, generate a complete task execution pipeline.\n\n"
+        user_content += f"Scenario:\n"
+        user_content += f"Objects present in scene: {', '.join(objects_seen)}\n"
+        user_content += f"Scene description: {description}\n\n"
+        user_content += "Based on the objects present and the scene description, construct a task pipeline (DAG) with proper dependencies. "
+        user_content += "Output ONLY the JSON array of task objects with all 6 required fields."
+        
+        messages.append({"role": "user", "content": user_content})
+        
+        # Build assistant message (tasks output)
+        # Remove sample-reasoning field from tasks (not part of output)
+        clean_tasks = []
+        for task in tasks:
+            clean_task = {k: v for k, v in task.items() if k != "sample-reasoning"}
+            clean_tasks.append(clean_task)
+        
+        assistant_content = json.dumps(clean_tasks, indent=2)
+        messages.append({"role": "assistant", "content": assistant_content})
+    
+    return messages
+
+
 @app.route('/health', methods=['GET'])
 def health():
     """Health check endpoint"""
@@ -517,26 +739,69 @@ def health():
 
 @app.route('/decisions', methods=['POST'])
 def decisions():
-    """Main endpoint for decision-only mode"""
+    """Main endpoint for decision-only mode
+    
+    Supports two modes:
+    1. Direct scenario input (new format):
+       {
+         "scenario": {
+           "objects-seen": ["car", "person", ...],
+           "sample-description": "Scene description..."
+         }
+       }
+    
+    2. Legacy messages format (backward compatibility):
+       {
+         "messages": [{"role": "user", "content": "..."}]
+       }
+    """
     try:
+        # Reset timestamp for this request (for prompt logging)
+        global CURRENT_REQUEST_TIMESTAMP
+        CURRENT_REQUEST_TIMESTAMP = time.strftime("%Y%m%d_%H%M%S")
+        
         data = request.get_json()
-        messages = data.get("messages", [])
         
-        if not messages:
-            return jsonify({"error": "No messages provided"}), 400
+        # Check if this is new scenario format (Option 1)
+        if "scenario" in data:
+            scenario = data["scenario"]
+            objects_seen = scenario.get("objects-seen", [])
+            description = scenario.get("sample-description", "")
+            
+            if not description:
+                return jsonify({"error": "Missing sample-description in scenario"}), 400
+            
+            # Build user input from scenario
+            user_input = description
+            context = []
+            
+            # Load demo examples from file (using the formatted demo file)
+            demo_messages = load_demos(config["demos_or_presteps"]["parse_task"])
+            
+            logger.info(f"Processing scenario request: objects={objects_seen}, description={description[:100]}...")
         
-        # Get user input from last message
-        user_input = messages[-1].get("content", "")
-        if not user_input:
-            return jsonify({"error": "Empty user input"}), 400
+        # Legacy format (backward compatibility)
+        else:
+            messages = data.get("messages", [])
+            
+            if not messages:
+                return jsonify({"error": "No messages or scenario provided"}), 400
+            
+            # Get user input from last message
+            user_input = messages[-1].get("content", "")
+            if not user_input:
+                return jsonify({"error": "Empty user input"}), 400
+            
+            # Get context (previous messages)
+            context = messages[:-1] if len(messages) > 1 else []
+            
+            # Use default objects_seen placeholder
+            objects_seen = None
+            
+            logger.info(f"Processing request: {user_input}")
         
-        # Get context (previous messages)
-        context = messages[:-1] if len(messages) > 1 else []
-        
-        logger.info(f"Processing request: {user_input}")
-        
-        # Step 1: Parse tasks (SAME as original chat_huggingface lines 1032-1062)
-        task_str = parse_task(user_input, context)
+        # Step 1: Parse tasks with objects_seen parameter
+        task_str = parse_task(user_input, context, objects_seen=objects_seen)
         
         if isinstance(task_str, dict) and "error" in task_str:
             return jsonify({"error": task_str["error"]}), 500
@@ -666,25 +931,182 @@ def decisions():
         response_text = generate_response_description(user_input, tasks, results)
         
         # Save execution config to file for easy viewing
-        import os
-        import time
         output_dir = "execution_configs"
         os.makedirs(output_dir, exist_ok=True)
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
-        filename = f"{output_dir}/execution_plan_{timestamp}.json"
+        filename = f"{output_dir}/execution_plan_{CURRENT_REQUEST_TIMESTAMP}.json"
         with open(filename, "w") as f:
             f.write(response_text)
         logger.info(f"Execution config saved to: {filename}")
+        
+        # Log prompt directory location
+        prompt_dir = f"prompt_logs/request_{CURRENT_REQUEST_TIMESTAMP}"
+        logger.info(f"Prompt logs saved to: {prompt_dir}/")
         
         return jsonify({
             "decisions": decisions_output, 
             "raw_results": results,
             "message": response_text,  # JSON execution config
-            "execution_config_file": filename  # Path to saved file
+            "execution_config_file": filename,  # Path to saved file
+            "prompt_logs_directory": prompt_dir  # Path to prompt logs
         })
         
     except Exception as e:
         logger.error(f"Error processing request: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/decisions/test', methods=['POST'])
+def decisions_test():
+    """Testing endpoint with automatic few-shot selection and test scenario extraction
+    
+    Request format:
+    {
+      "few_shot_categories": [0, 2, 5],           # Array of category indices to use for few-shot
+      "num_few_shot_examples_per_category": 2,   # Number of examples per category
+      "test_category_index": 10,                 # Category index for testing
+      "test_example_index": 0                    # Example index within that category (0-based)
+    }
+    
+    This will:
+    1. Load examples from specified few-shot categories
+    2. Extract the test scenario from the specified category and example index
+    3. Generate tasks for that test scenario
+    4. Return both the generated tasks and the ground truth for comparison
+    """
+    try:
+        # Reset timestamp for this request
+        global CURRENT_REQUEST_TIMESTAMP
+        CURRENT_REQUEST_TIMESTAMP = time.strftime("%Y%m%d_%H%M%S")
+        
+        data = request.get_json()
+        
+        # Validate required parameters
+        few_shot_categories = data.get("few_shot_categories", [])
+        num_examples_per_category = data.get("num_few_shot_examples_per_category", 1)
+        test_category_index = data.get("test_category_index")
+        test_example_index = data.get("test_example_index", 0)
+        
+        if not isinstance(few_shot_categories, list):
+            return jsonify({"error": "few_shot_categories must be an array"}), 400
+        
+        if test_category_index is None:
+            return jsonify({"error": "test_category_index is required"}), 400
+        
+        # Load all examples and category mapping
+        all_examples = load_all_examples()
+        if not all_examples:
+            return jsonify({"error": "Failed to load examples"}), 500
+        
+        category_mapping = load_category_mapping()
+        if not category_mapping:
+            return jsonify({"error": "Failed to load category mapping"}), 500
+        
+        logger.info(f"Testing mode: few_shot_cats={few_shot_categories}, test_cat={test_category_index}, test_ex={test_example_index}")
+        
+        # Build few-shot examples (excluding test example)
+        few_shot_examples_data = build_few_shot_examples(few_shot_categories, num_examples_per_category, all_examples)
+        
+        # Get test example
+        test_category = next((c for c in category_mapping["categories"] if c["index"] == test_category_index), None)
+        if not test_category:
+            return jsonify({"error": f"Test category index {test_category_index} not found"}), 400
+        
+        # Find test example from all_examples
+        test_examples_in_category = [ex for ex in all_examples if ex.get("base_pipeline_id") == test_category["base_pipeline_id"]]
+        
+        if test_example_index >= len(test_examples_in_category):
+            return jsonify({
+                "error": f"Test example index {test_example_index} out of range. Category '{test_category['base_pipeline_id']}' has {len(test_examples_in_category)} examples"
+            }), 400
+        
+        test_example = test_examples_in_category[test_example_index]
+        test_scenario = test_example.get("scenario", {})
+        test_ground_truth = test_example.get("tasks", [])
+        
+        # Format few-shot examples for prompt
+        few_shot_messages = format_few_shot_for_prompt(few_shot_examples_data)
+        
+        # Build system prompt
+        system_prompt_content = load_prompt_value(config["tprompt"]["parse_task"])
+        
+        # Build complete prompt with few-shot examples
+        messages = [{"role": "system", "content": system_prompt_content}]
+        messages.extend(few_shot_messages)
+        
+        # Add test scenario as user input
+        objects_seen = test_scenario.get("objects-seen", [])
+        description = test_scenario.get("sample-description", "")
+        
+        user_prompt_template = load_prompt_value(config["prompt"]["parse_task"])
+        test_user_prompt = replace_slot(user_prompt_template, {
+            "input": description,
+            "context": "",
+            "objects_seen": ", ".join(objects_seen)
+        })
+        
+        messages.append({"role": "user", "content": test_user_prompt})
+        
+        # Save prompt structure for debugging
+        save_prompt_to_file(messages, "parse_task")
+        
+        # Call LLM to generate tasks
+        logit_bias = None
+        if HAS_TOKEN_UTILS and task_parsing_highlight_ids:
+            logit_bias = {item: config.get("logit_bias", {}).get("parse_task", 0.1) for item in task_parsing_highlight_ids}
+        
+        response = send_llm_request(messages, temperature=0.1, logit_bias=logit_bias)
+        if not response:
+            return jsonify({"error": "Failed to get LLM response"}), 500
+        
+        # Parse generated tasks
+        response = response.strip()
+        response = response.replace(' }} , ', '}}, ')
+        response = response.replace(' }} ,', '}},')
+        response = response.replace('}} ,', '}},')
+        response = re.sub(r',\s*([}\]])', r'\1', response)
+        
+        try:
+            generated_tasks = json.loads(response)
+        except Exception as e:
+            logger.error(f"Failed to parse generated tasks: {e}, response: {response}")
+            return jsonify({"error": f"Invalid task JSON: {response}"}), 500
+        
+        if not isinstance(generated_tasks, list):
+            generated_tasks = []
+        
+        # Clean ground truth (remove sample-reasoning)
+        clean_ground_truth = []
+        for task in test_ground_truth:
+            clean_task = {k: v for k, v in task.items() if k != "sample-reasoning"}
+            clean_ground_truth.append(clean_task)
+        
+        # Return results with comparison
+        return jsonify({
+            "test_info": {
+                "test_category": test_category["base_pipeline_id"],
+                "test_category_index": test_category_index,
+                "test_example_index": test_example_index,
+                "test_example_id": test_example.get("id"),
+                "few_shot_categories": [
+                    {
+                        "index": cat_idx,
+                        "name": next((c["base_pipeline_id"] for c in category_mapping["categories"] if c["index"] == cat_idx), "unknown")
+                    }
+                    for cat_idx in few_shot_categories
+                ],
+                "num_few_shot_examples": len(few_shot_examples_data)
+            },
+            "test_scenario": {
+                "objects_seen": objects_seen,
+                "description": description
+            },
+            "generated_tasks": generated_tasks,
+            "ground_truth_tasks": clean_ground_truth,
+            "prompt_logs_directory": f"prompt_logs/request_{CURRENT_REQUEST_TIMESTAMP}/"
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in testing mode: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 

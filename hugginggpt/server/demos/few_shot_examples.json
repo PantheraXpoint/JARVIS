@@ -1,0 +1,241 @@
+[
+  {
+    "id": "traffic-with-humans-example-1",
+    "base_pipeline_id": "traffic-with-humans",
+    "scenario": {
+      "id": "traffic-with-humans",
+      "objects-seen": [
+        "car",
+        "truck",
+        "bus",
+        "motorcycle",
+        "bicycle",
+        "person"
+      ],
+      "sample-description": "Normal traffic scenario with multiple vehicles traveling in both directions on a multi-lane highway. Vehicles are maintaining safe distances and are properly positioned within their lanes."
+    },
+    "tasks": [
+      {
+        "id": "source",
+        "inputs_from_upstreams": ["none"],
+        "upstreams": ["none"],
+        "outputs_for_downstreams": ["image"],
+        "downstreams": ["object-detection-general"],
+        "sample-reasoning": [
+          "object-detection-general helps Detecting vehicles and humans on the road for traffic monitoring and analysis."
+        ]
+      },
+      {
+        "id": "object-detection-general",
+        "inputs_from_upstreams": ["image"],
+        "upstreams": ["source"],
+        "outputs_for_downstreams": ["bounding boxes"],
+        "downstreams": [
+          "vehicle-color-classification",
+          "vehicle-make-classification",
+          "cloth-color-classification"
+        ],
+        "sample-reasoning": [
+          "vehicle-color-classification: Classifying vehicle colors for traffic analysis and management.",
+          "vehicle-make-classification: Identifying vehicle makes for traffic monitoring and law enforcement.",
+          "cloth-color-classification: Classifying clothing colors to better recognize and identify individuals.",
+          "human-pose-detection: In a normal traffic without traffic accidents, human pose detection is not included."
+        ]
+      },
+      {
+        "id": "vehicle-color-classification",
+        "inputs_from_upstreams": ["vehicle bounding boxes"],
+        "upstreams": ["object-detection-general"],
+        "outputs_for_downstreams": ["vehicle color labels"],
+        "downstreams": ["pipeline-end"],
+        "sample-reasoning": [
+          "pipeline-end: Finalizing the pipeline after analysis."
+        ]
+      },
+      {
+        "id": "vehicle-make-classification",
+        "inputs_from_upstreams": ["vehicle bounding boxes"],
+        "upstreams": ["object-detection-general"],
+        "outputs_for_downstreams": ["vehicle make labels"],
+        "downstreams": ["vehicle-plate-detection"],
+        "sample-reasoning": [
+          "vehicle-plate-detection: Further analyzing vehicles by detecting their license plates for law enforcement and traffic monitoring."
+        ]
+      },
+      {
+        "id": "vehicle-plate-detection",
+        "inputs_from_upstreams": ["vehicle bounding boxes"],
+        "upstreams": ["vehicle-make-classification"],
+        "outputs_for_downstreams": ["license plate bounding boxes"],
+        "downstreams": ["pipeline-end"],
+        "sample-reasoning": [
+          "pipeline-end: Finalizing the pipeline after analysis."
+        ]
+      },
+      {
+        "id": "cloth-color-classification",
+        "inputs_from_upstreams": ["person bounding boxes"],
+        "upstreams": ["object-detection-general"],
+        "outputs_for_downstreams": ["cloth color labels"],
+        "downstreams": ["face-detection"],
+        "sample-reasoning": [
+          "face-detection: Further analyzing humans by detecting faces for identification and monitoring."
+        ]
+      },
+      {
+        "id": "face-detection",
+        "inputs_from_upstreams": ["person bounding boxes"],
+        "upstreams": ["cloth-color-classification"],
+        "outputs_for_downstreams": ["face bounding boxes"],
+        "downstreams": ["pipeline-end"],
+        "sample-reasoning": [
+          "pipeline-end: Finalizing the pipeline after analysis."
+        ]
+      },
+      {
+        "id": "pipeline-end",
+        "inputs_from_upstreams": ["various task outputs"],
+        "upstreams": [
+          "vehicle-color-classification",
+          "vehicle-plate-detection",
+          "face-detection"
+        ],
+        "outputs_for_downstreams": ["none"],
+        "downstreams": [],
+        "sample-reasonings": []
+      }
+    ]
+  },
+  {
+    "id": "traffic-with-accident-example-0",
+    "base_pipeline_id": "traffic-with-accident",
+    "scenario": {
+      "id": "traffic-with-accident",
+      "objects-seen": [
+        "car",
+        "truck",
+        "bus",
+        "motorcycle",
+        "bicycle",
+        "person"
+      ],
+      "sample-description": "A white car has collided with a bicycle, causing the cyclist to fall onto the road. The cyclist is lying on the ground near the bicycle. Vehicles are moving along their respective lanes, and pedestrians are walking on the sidewalks."
+    },
+    "tasks": [
+      {
+        "id": "source",
+        "inputs_from_upstreams": ["none"],
+        "upstreams": ["none"],
+        "outputs_for_downstreams": ["image"],
+        "downstreams": ["object-detection-general"],
+        "sample-reasoning": [
+          "object-detection-general helps Detecting vehicles and humans on the road for traffic monitoring and analysis."
+        ]
+      },
+      {
+        "id": "object-detection-general",
+        "inputs_from_upstreams": ["image"],
+        "upstreams": [],
+        "outputs_for_downstreams": ["bounding boxes"],
+        "downstreams": [
+          "vehicle-damage-detection",
+          "vehicle-color-classification",
+          "vehicle-make-classification",
+          "cloth-color-classification",
+          "human-pose-detection"
+        ],
+        "sample-reasoning": [
+          "vehicle-damage-detection: Since there is a traffic accident, vehicle damage detection is included to assess the extent of damages.",
+          "vehicle-color-classification: Since there is a traffic accident, vehicle color classification is included for better identification of involved vehicles.",
+          "vehicle-make-classification: Since there is a traffic accident, vehicle make classification is included for better identification of involved vehicles.",
+          "cloth-color-classification: Since there are humans present, cloth color classification is included to better recognize and identify individuals.",
+          "human-pose-detection: Since there are humans present in the accident, human pose detection is included to monitor involved individuals and ensure pedestrian safety."
+        ]
+      },
+      {
+        "id": "vehicle-damage-detection",
+        "inputs_from_upstreams": ["vehicle bounding boxes"],
+        "upstreams": ["object-detection-general"],
+        "outputs_for_downstreams": ["damage bounding boxes"],
+        "downstreams": ["pipeline-end"],
+        "sample-reasoning": [
+          "pipeline-end: Finalizing the pipeline after analysis."
+        ]
+      },
+      {
+        "id": "vehicle-color-classification",
+        "inputs_from_upstreams": ["vehicle bounding boxes"],
+        "upstreams": ["object-detection-general"],
+        "outputs_for_downstreams": ["vehicle color labels"],
+        "downstreams": ["pipeline-end"],
+        "sample-reasoning": [
+          "pipeline-end: Finalizing the pipeline after analysis."
+        ]
+      },
+      {
+        "id": "vehicle-make-classification",
+        "inputs_from_upstreams": ["vehicle bounding boxes"],
+        "upstreams": ["object-detection-general"],
+        "outputs_for_downstreams": ["vehicle make labels"],
+        "downstreams": ["vehicle-plate-detection"],
+        "sample-reasoning": [
+          "vehicle-plate-detection: Since there is a traffic accident, further analyzing vehicles by detecting their license plates for law enforcement and traffic monitoring."
+        ]
+      },
+      {
+        "id": "vehicle-plate-detection",
+        "inputs_from_upstreams": ["vehicle bounding boxes"],
+        "upstreams": ["vehicle-make-classification"],
+        "outputs_for_downstreams": ["license plate bounding boxes"],
+        "downstreams": ["pipeline-end"],
+        "sample-reasoning": [
+          "pipeline-end: Finalizing the pipeline after analysis."
+        ]
+      },
+      {
+        "id": "cloth-color-classification",
+        "inputs_from_upstreams": ["person bounding boxes"],
+        "upstreams": ["object-detection-general"],
+        "outputs_for_downstreams": ["cloth color labels"],
+        "downstreams": ["face-detection"],
+        "sample-reasoning": [
+          "face-detection: Further analyzing humans by detecting faces for identification and monitoring."
+        ]
+      },
+      {
+        "id": "face-detection",
+        "inputs_from_upstreams": ["person bounding boxes"],
+        "upstreams": ["cloth-color-classification"],
+        "outputs_for_downstreams": ["face bounding boxes"],
+        "downstreams": ["pipeline-end"],
+        "sample-reasoning": [
+          "pipeline-end: Finalizing the pipeline after analysis."
+        ]
+      },
+      {
+        "id": "human-pose-detection",
+        "inputs_from_upstreams": ["person bounding boxes"],
+        "upstreams": ["object-detection-general"],
+        "outputs_for_downstreams": ["pose key points"],
+        "downstreams": ["pipeline-end"],
+        "sample-reasoning": [
+          "pipeline-end: Finalizing the pipeline after analysis."
+        ]
+      },
+      {
+        "id": "pipeline-end",
+        "inputs_from_upstreams": ["various task outputs"],
+        "upstreams": [
+          "vehicle-damage-detection",
+          "vehicle-color-classification",
+          "vehicle-plate-detection",
+          "face-detection",
+          "human-pose-detection"
+        ],
+        "outputs_for_downstreams": ["none"],
+        "downstreams": [],
+        "sample-reasonings": []
+      }
+    ]
+  }
+]

@@ -1,6 +1,10 @@
 # ALL
 *.dev.yaml
 
+# ignore everything in hugginggpt/web folder
+hugginggpt/web/*
+hugginggpt/assets/*
+
 legacy/
 
 # for server
@@ -36,6 +40,7 @@ web/package-lock.json
 web/dist
 web/electron-dist
 web/yarn.lock
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

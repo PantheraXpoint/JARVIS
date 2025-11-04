@@ -1,0 +1,250 @@
+{
+  "source": {
+    "id": "source",
+    "name": "Source Task",
+    "description": "The that streams inputs data into the pipeline.",
+    "inputs": ["none"],
+    "outputs": ["image"],
+    "models": [
+      {
+        "id": "datasource",
+        "name": "No model (Data Source)",
+        "description": "This task does not use any model as it serves as the data source for the pipeline."
+      }
+    ]
+  },
+  "object-detection-general": {
+    "id": "object-detection-general",
+    "name": "Object Detection on general",
+    "description": "Detect and localize objects in images using models trained on the COCO dataset.",
+    "inputs": ["image"],
+    "outputs": ["bounding boxes"],
+    "models": [
+      {
+        "id": "yolov5n",
+        "name": "YOLOv5n",
+        "description": "A lightweight version of the YOLOv5 architecture, optimized for speed and efficiency while maintaining good accuracy."
+      },
+      {
+        "id": "yolov5s",
+        "name": "YOLOv5s",
+        "description": "A small version of the YOLOv5 architecture, balancing speed and accuracy for real-time applications."
+      },
+      {
+        "id": "yolov5m",
+        "name": "YOLOv5m",
+        "description": "A medium-sized version of the YOLOv5 architecture, providing a good trade-off between speed and accuracy for various applications."
+      }
+    ]
+  },
+  "face-detection": {
+    "id": "face-detection",
+    "name": "Face Detection",
+    "description": "Detect and localize human faces in images using specialized face detection models.",
+    "inputs": ["person bounding boxes"],
+    "outputs": ["face bounding boxes"],
+    "models": [
+      {
+        "id": "retina1face",
+        "name": "RetinaFace on bounding boxes",
+        "description": "An optimized version of the RetinaFace model, designed for efficient face detection within specified bounding boxes."
+      }
+    ]
+  },
+  "vehicle-plate-detection": {
+    "id": "vehicle-plate-detection",
+    "name": "License Plate Detection",
+    "description": "Detect and localize vehicle license plates in images using specialized license plate detection models.",
+    "inputs": ["vehicle bounding boxes"],
+    "outputs": ["license plate bounding boxes"],
+    "models": [
+      {
+        "id": "platedet",
+        "name": "License Plate Detection Model",
+        "description": "A model specifically trained to identify and localize vehicle license plates in various conditions."
+      }
+    ]
+  },
+  "vehicle-damage-detection": {
+    "id": "vehicle-damage-detection",
+    "name": "Vehicle Damage Detection",
+    "description": "Detect and localize damages on vehicles in images using specialized vehicle damage detection models.",
+    "inputs": ["vehicle bounding boxes"],
+    "outputs": ["damage bounding boxes"],
+    "models": [
+      {
+        "id": "cardamage",
+        "name": "Vehicle Damage Detection Model",
+        "description": "A model specifically trained to identify and localize damages on vehicles in various conditions."
+      }
+    ]
+  },
+  "protective-gear-detection": {
+    "id": "protective-gear-detection",
+    "name": "Protective Gear Detection",
+    "description": "Detect and localize personal protective equipment (PPE) in images using specialized gear detection models.",
+    "inputs": ["person bounding boxes"],
+    "outputs": ["protective gear bounding boxes"],
+    "models": [
+      {
+        "id": "geardetect",
+        "name": "Gear Detection Model",
+        "description": "A model specifically trained to identify and localize gears in various industrial images."
+      }
+    ]
+  },
+  "equipment-detection": {
+    "id": "equipment-detection",
+    "name": "Equipment Detection",
+    "description": "Detect and localize industrial equipment (e.g., forklifts) in images using specialized equipment detection models.",
+    "inputs": ["image"],
+    "outputs": ["equipment bounding boxes"],
+    "models": [
+      {
+        "id": "equipmentdetect",
+        "name": "Equipment Detection Model",
+        "description": "A model specifically trained to identify and localize industrial equipment (e.g., forklifts) in various settings."
+      }
+    ]
+  },
+  "fire-detection": {
+    "id": "fire-detection",
+    "name": "Fire and Smoke Detection",
+    "description": "Detect and localize fire and smoke in images using specialized fire detection models.",
+    "inputs": ["image"],
+    "outputs": ["fire and smoke bounding boxes"],
+    "models": [
+      {
+        "id": "firedetect",
+        "name": "Fire and Smoke Detection Model",
+        "description": "A model specifically trained to identify and localize fire and smoke in various environments."
+      }
+    ]
+  },
+  "cloth-color-classification": {
+    "id": "cloth-color-classification",
+    "name": "Cloth Color Classification",
+    "description": "Classify and identify colors in images using specialized color classification models.",
+    "inputs": ["person bounding boxes"],
+    "outputs": ["cloth color labels"],
+    "models": [
+      {
+        "id": "fashioncolor",
+        "name": "Cloth Color Classifier",
+        "description": "A model specifically trained to classify and identify colors in clothing items."
+      }
+    ]
+  },
+  "vehicle-color-classification": {
+    "id": "vehicle-color-classification",
+    "name": "Vehicle Color Classification",
+    "description": "Classify and identify colors of vehicles in images using specialized vehicle color classification models.",
+    "inputs": ["vehicle bounding boxes"],
+    "outputs": ["vehicle color labels"],
+    "models": [
+      {
+        "id": "vehiclecolor",
+        "name": "Vehicle Color Classifier",
+        "description": "A model specifically trained to classify and identify colors in vehicles."
+      }
+    ]
+  },
+  "gender-classification": {
+    "id": "gender-classification",
+    "name": "Gender Classification",
+    "description": "Classify and identify gender of faces in images",
+    "inputs": ["face bounding boxes"],
+    "outputs": ["gender labels"],
+    "models": [
+      {
+        "id": "gender",
+        "name": "Gender Classifier",
+        "description": "A model specifically trained to classify and identify gender of faces in images."
+      }
+    ]
+  },
+  "age-classification": {
+    "id": "age-classification",
+    "name": "Age Classification",
+    "description": "Classify and identify age groups of faces in images",
+    "inputs": ["face bounding boxes"],
+    "outputs": ["age group labels"],
+    "models": [
+      {
+        "id": "age",
+        "name": "Age Classifier",
+        "description": "A model specifically trained to classify and identify age groups of faces in images."
+      }
+    ]
+  },
+  "emotion-classification": {
+    "id": "emotion-classification",
+    "name": "Emotion Classification",
+    "description": "Classify and identify emotions of faces in images",
+    "inputs": ["face bounding boxes"],
+    "outputs": ["emotion labels"],
+    "models": [
+      {
+        "id": "emotion",
+        "name": "Emotion Classifier",
+        "description": "A model specifically trained to classify and identify emotions of faces in images."
+      }
+    ]
+  },
+  "face-recognition": {
+    "id": "face-recognition",
+    "name": "Face Recognition",
+    "description": "Recognize and verify identities of faces in images using specialized face recognition models.",
+    "inputs": ["face bounding boxes"],
+    "outputs": ["identity labels"],
+    "models": [
+      {
+        "id": "arcface",
+        "name": "ArcFace",
+        "description": "A state-of-the-art face recognition model that uses deep learning techniques to accurately identify and verify faces in images."
+      }
+    ]
+  },
+  "vehicle-make-classification": {
+    "id": "vehicle-make-classification",
+    "name": "Vehicle Make Classification",
+    "description": "Classify and identify brands of vehicles in images using specialized vehicle brand classification models.",
+    "inputs": ["vehicle bounding boxes"],
+    "outputs": ["vehicle make labels"],
+    "models": [
+      {
+        "id": "carbrand",
+        "name": "Vehicle Make Classifier",
+        "description": "A model specifically trained to classify and identify different makes of vehicles (e.g., Ford, Toyota, Honda)."
+      }
+    ]
+  },
+  "human-pose-detection": {
+    "id": "human-pose-detection",
+    "name": "Pose Detection",
+    "description": "Detect and analyze human body poses in images using specialized pose detection models.",
+    "inputs": ["person bounding boxes"],
+    "outputs": ["pose key points"],
+    "models": [
+      {
+        "id": "movenet",
+        "name": "MoveNet",
+        "description": "A fast and accurate pose detection model that identifies key points of the human body in images, enabling real-time pose analysis."
+      }
+    ]
+  },
+  "pipeline-end": {
+    "id": "pipeline-end",
+    "name": "Pipeline End Task",
+    "description": "The task that marks the end of the pipeline.",
+    "inputs": ["various task outputs"],
+    "outputs": ["none"],
+    "models": [
+      {
+        "id": "pipeline-end",
+        "name": "No model (Pipeline End)",
+        "description": "This task does not use any model as it serves as the endpoint for the pipeline."
+      }
+    ]
+  }
+}

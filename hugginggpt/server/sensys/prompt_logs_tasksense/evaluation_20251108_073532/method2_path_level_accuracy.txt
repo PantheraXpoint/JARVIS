@@ -1,0 +1,336 @@
+================================================================================
+METHOD 2: PATH-LEVEL ACCURACY EVALUATION
+================================================================================
+Timestamp: 20251108_073532
+Evaluation Method: Path-level (individual paths from source to pipeline-end)
+
+================================================================================
+OVERALL STATISTICS
+================================================================================
+Total Samples: 22
+Samples with Valid Paths: 22
+Total Ground Truth Paths: 92
+Total Matched Paths: 52
+Average Path Accuracy: 56.97%
+
+================================================================================
+PER-SAMPLE BREAKDOWN
+================================================================================
+
+[1/22] business-with-fire-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 4
+Generated Paths: 4
+Matched Paths: 2
+Path Accuracy: 50.00%
+
+Missing Paths (2):
+  - source -> fire-detection -> pipeline-end
+  - source -> object-detection-general -> cloth-color-classification -> pipeline-end
+
+Extra Paths (2):
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+  - source -> object-detection-general -> fire-detection -> pipeline-end
+
+[2/22] business-with-fire-example-2
+--------------------------------------------------------------------------------
+Ground Truth Paths: 4
+Generated Paths: 4
+Matched Paths: 2
+Path Accuracy: 50.00%
+
+Missing Paths (2):
+  - source -> fire-detection -> pipeline-end
+  - source -> object-detection-general -> cloth-color-classification -> pipeline-end
+
+Extra Paths (2):
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+  - source -> object-detection-general -> fire-detection -> pipeline-end
+
+[3/22] campus-with-fight-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 5
+Generated Paths: 6
+Matched Paths: 3
+Path Accuracy: 60.00%
+
+Missing Paths (2):
+  - source -> object-detection-general -> vehicle-color-classification -> pipeline-end
+  - source -> object-detection-general -> vehicle-make-classification -> vehicle-plate-detection -> pipeline-end
+
+Extra Paths (3):
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+  - source -> object-detection-general -> human-pose-detection -> pipeline-end
+  - source -> object-detection-general -> fire-detection -> pipeline-end
+
+[4/22] traffic-with-humans-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 3
+Generated Paths: 6
+Matched Paths: 2
+Path Accuracy: 66.67%
+
+Missing Paths (1):
+  - source -> object-detection-general -> cloth-color-classification -> face-detection -> pipeline-end
+
+Extra Paths (4):
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+  - source -> object-detection-general -> face-detection -> face-recognition -> pipeline-end
+  - source -> object-detection-general -> face-detection -> gender-classification -> pipeline-end
+  - ... and 1 more
+
+[5/22] campus-with-human-fall-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 6
+Generated Paths: 5
+Matched Paths: 4
+Path Accuracy: 66.67%
+
+Missing Paths (2):
+  - source -> object-detection-general -> vehicle-color-classification -> pipeline-end
+  - source -> object-detection-general -> vehicle-make-classification -> vehicle-plate-detection -> pipeline-end
+
+Extra Paths (1):
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+
+[6/22] campus-with-human-fall-example-2
+--------------------------------------------------------------------------------
+Ground Truth Paths: 6
+Generated Paths: 4
+Matched Paths: 3
+Path Accuracy: 50.00%
+
+Missing Paths (3):
+  - source -> object-detection-general -> vehicle-color-classification -> pipeline-end
+  - source -> object-detection-general -> human-pose-detection -> pipeline-end
+  - source -> object-detection-general -> vehicle-make-classification -> vehicle-plate-detection -> pipeline-end
+
+Extra Paths (1):
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+
+[7/22] campus-with-fire-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 6
+Generated Paths: 4
+Matched Paths: 2
+Path Accuracy: 33.33%
+
+Missing Paths (4):
+  - source -> fire-detection -> pipeline-end
+  - source -> object-detection-general -> vehicle-color-classification -> pipeline-end
+  - source -> object-detection-general -> vehicle-make-classification -> vehicle-plate-detection -> pipeline-end
+  - ... and 1 more
+
+Extra Paths (2):
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+  - source -> object-detection-general -> fire-detection -> pipeline-end
+
+[8/22] factory-with-human-fall-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 4
+Generated Paths: 5
+Matched Paths: 0
+Path Accuracy: 0.00%
+
+Missing Paths (4):
+  - source -> object-detection-general -> protective-gear-detection -> pipeline-end
+  - source -> fire-detection -> pipeline-end
+  - source -> object-detection-general -> cloth-color-classification -> pipeline-end
+  - ... and 1 more
+
+Extra Paths (5):
+  - source -> object-detection-general -> equipment-detection -> pipeline-end
+  - source -> object-detection-general -> face-detection -> gender-classification -> pipeline-end
+  - source -> object-detection-general -> face-detection -> face-recognition -> pipeline-end
+  - ... and 2 more
+
+[9/22] campus-normal-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 6
+Generated Paths: 4
+Matched Paths: 4
+Path Accuracy: 66.67%
+
+Missing Paths (2):
+  - source -> object-detection-general -> vehicle-color-classification -> pipeline-end
+  - source -> object-detection-general -> vehicle-make-classification -> vehicle-plate-detection -> pipeline-end
+
+[10/22] campus-normal-example-2
+--------------------------------------------------------------------------------
+Ground Truth Paths: 6
+Generated Paths: 3
+Matched Paths: 3
+Path Accuracy: 50.00%
+
+Missing Paths (3):
+  - source -> object-detection-general -> vehicle-color-classification -> pipeline-end
+  - source -> object-detection-general -> face-detection -> face-recognition -> pipeline-end
+  - source -> object-detection-general -> vehicle-make-classification -> vehicle-plate-detection -> pipeline-end
+
+[11/22] business-with-human-fall-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 4
+Generated Paths: 5
+Matched Paths: 4
+Path Accuracy: 100.00%
+
+Extra Paths (1):
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+
+[12/22] business-with-human-fall-example-2
+--------------------------------------------------------------------------------
+Ground Truth Paths: 4
+Generated Paths: 5
+Matched Paths: 4
+Path Accuracy: 100.00%
+
+Extra Paths (1):
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+
+[13/22] factory-normal-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 3
+Generated Paths: 5
+Matched Paths: 0
+Path Accuracy: 0.00%
+
+Missing Paths (3):
+  - source -> object-detection-general -> protective-gear-detection -> pipeline-end
+  - source -> object-detection-general -> cloth-color-classification -> pipeline-end
+  - source -> equipment-detection -> pipeline-end
+
+Extra Paths (5):
+  - source -> object-detection-general -> cloth-color-classification -> face-detection -> emotion-classification -> pipeline-end
+  - source -> object-detection-general -> equipment-detection -> pipeline-end
+  - source -> object-detection-general -> cloth-color-classification -> face-detection -> face-recognition -> pipeline-end
+  - ... and 2 more
+
+[14/22] business-with-fight-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 3
+Generated Paths: 5
+Matched Paths: 3
+Path Accuracy: 100.00%
+
+Extra Paths (2):
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+  - source -> object-detection-general -> human-pose-detection -> pipeline-end
+
+[15/22] business-with-fight-example-2
+--------------------------------------------------------------------------------
+Ground Truth Paths: 3
+Generated Paths: 4
+Matched Paths: 2
+Path Accuracy: 66.67%
+
+Missing Paths (1):
+  - source -> object-detection-general -> cloth-color-classification -> pipeline-end
+
+Extra Paths (2):
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+  - source -> object-detection-general -> fire-detection -> pipeline-end
+
+[16/22] traffic-with-fire-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 4
+Generated Paths: 4
+Matched Paths: 0
+Path Accuracy: 0.00%
+
+Missing Paths (4):
+  - source -> fire-detection -> pipeline-end
+  - source -> object-detection-general -> vehicle-color-classification -> pipeline-end
+  - source -> object-detection-general -> cloth-color-classification -> face-detection -> pipeline-end
+  - ... and 1 more
+
+Extra Paths (4):
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+  - source -> object-detection-general -> face-detection -> face-recognition -> pipeline-end
+  - source -> object-detection-general -> face-detection -> gender-classification -> pipeline-end
+  - ... and 1 more
+
+[17/22] traffic-with-accident-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 5
+Generated Paths: 8
+Matched Paths: 3
+Path Accuracy: 60.00%
+
+Missing Paths (2):
+  - source -> object-detection-general -> vehicle-damage-detection -> pipeline-end
+  - source -> object-detection-general -> cloth-color-classification -> face-detection -> pipeline-end
+
+Extra Paths (5):
+  - source -> object-detection-general -> face-detection -> gender-classification -> pipeline-end
+  - source -> object-detection-general -> face-detection -> face-recognition -> pipeline-end
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+  - ... and 2 more
+
+[18/22] business-normal-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 4
+Generated Paths: 6
+Matched Paths: 4
+Path Accuracy: 100.00%
+
+Extra Paths (2):
+  - source -> object-detection-general -> vehicle-color-classification -> pipeline-end
+  - source -> object-detection-general -> vehicle-make-classification -> pipeline-end
+
+[19/22] business-normal-example-2
+--------------------------------------------------------------------------------
+Ground Truth Paths: 4
+Generated Paths: 4
+Matched Paths: 4
+Path Accuracy: 100.00%
+
+[20/22] traffic-with-no-humans-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 2
+Generated Paths: 5
+Matched Paths: 2
+Path Accuracy: 100.00%
+
+Extra Paths (3):
+  - source -> object-detection-general -> cloth-color-classification -> face-detection -> emotion-classification -> pipeline-end
+  - source -> object-detection-general -> cloth-color-classification -> face-detection -> face-recognition -> pipeline-end
+  - source -> object-detection-general -> cloth-color-classification -> face-detection -> gender-classification -> pipeline-end
+
+[21/22] traffic-with-fight-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 3
+Generated Paths: 4
+Matched Paths: 0
+Path Accuracy: 0.00%
+
+Missing Paths (3):
+  - source -> object-detection-general -> vehicle-color-classification -> pipeline-end
+  - source -> object-detection-general -> cloth-color-classification -> face-detection -> pipeline-end
+  - source -> object-detection-general -> vehicle-make-classification -> vehicle-plate-detection -> pipeline-end
+
+Extra Paths (4):
+  - source -> object-detection-general -> face-detection -> emotion-classification -> pipeline-end
+  - source -> object-detection-general -> face-detection -> face-recognition -> pipeline-end
+  - source -> object-detection-general -> face-detection -> gender-classification -> pipeline-end
+  - ... and 1 more
+
+[22/22] factory-with-fight-example-1
+--------------------------------------------------------------------------------
+Ground Truth Paths: 3
+Generated Paths: 6
+Matched Paths: 1
+Path Accuracy: 33.33%
+
+Missing Paths (2):
+  - source -> object-detection-general -> protective-gear-detection -> pipeline-end
+  - source -> equipment-detection -> pipeline-end
+
+Extra Paths (5):
+  - source -> object-detection-general -> equipment-detection -> pipeline-end
+  - source -> object-detection-general -> face-detection -> gender-classification -> pipeline-end
+  - source -> object-detection-general -> face-detection -> face-recognition -> pipeline-end
+  - ... and 2 more
+
+================================================================================
+END OF REPORT
+================================================================================

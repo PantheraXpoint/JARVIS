@@ -1,0 +1,1757 @@
+{
+  "timestamp": "20251108_080327",
+  "total_test_examples": 22,
+  "few_shot_examples": [
+    "business-normal-example-0",
+    "business-with-fight-example-0",
+    "business-with-fire-example-0",
+    "business-with-human-fall-example-0",
+    "campus-normal-example-0",
+    "campus-with-fight-example-0",
+    "campus-with-fire-example-0",
+    "campus-with-human-fall-example-0",
+    "factory-normal-example-0",
+    "factory-with-fight-example-0",
+    "factory-with-human-fall-example-0",
+    "traffic-with-accident-example-0",
+    "traffic-with-fight-example-0",
+    "traffic-with-fire-example-0",
+    "traffic-with-humans-example-0",
+    "traffic-with-no-humans-example-0"
+  ],
+  "comparison_fields": [
+    "task_id",
+    "inputs_from_upstreams",
+    "upstreams",
+    "outputs_for_downstreams",
+    "downstreams"
+  ],
+  "results": [
+    {
+      "example_id": "business-with-fire-example-1",
+      "status": "success",
+      "generated_task_count": 9,
+      "ground_truth_task_count": 8,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 8,
+        "generated_tasks": 9,
+        "matched_tasks": 0,
+        "mismatches": [
+          {
+            "reason": "Task count mismatch: expected 8, got 9"
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 4,
+        "total_ground_truth_paths": 4,
+        "total_generated_paths": 5,
+        "accuracy": 1.0,
+        "missing_paths": [],
+        "extra_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "face-detection",
+            "emotion-classification",
+            "pipeline-end"
+          ]
+        ]
+      }
+    },
+    {
+      "example_id": "business-with-fire-example-2",
+      "status": "success",
+      "generated_task_count": 9,
+      "ground_truth_task_count": 8,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 8,
+        "generated_tasks": 9,
+        "matched_tasks": 0,
+        "mismatches": [
+          {
+            "reason": "Task count mismatch: expected 8, got 9"
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 4,
+        "total_ground_truth_paths": 4,
+        "total_generated_paths": 5,
+        "accuracy": 1.0,
+        "missing_paths": [],
+        "extra_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "face-detection",
+            "emotion-classification",
+            "pipeline-end"
+          ]
+        ]
+      }
+    },
+    {
+      "example_id": "campus-with-fight-example-1",
+      "status": "success",
+      "generated_task_count": 11,
+      "ground_truth_task_count": 11,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 11,
+        "matched_tasks": 10,
+        "mismatches": [
+          {
+            "task_index": 5,
+            "task_id": "object-detection-general",
+            "differing_fields": [
+              {
+                "field": "downstreams",
+                "generated": [
+                  "cloth-color-classification",
+                  "face-detection",
+                  "human-pose-detection",
+                  "vehicle-color-classification",
+                  "vehicle-make-classification"
+                ],
+                "ground_truth": [
+                  "cloth-color-classification",
+                  "face-detection",
+                  "vehicle-color-classification",
+                  "vehicle-make-classification"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "object-detection-general",
+              "inputs_from_upstreams": [
+                "image"
+              ],
+              "upstreams": [
+                "source"
+              ],
+              "outputs_for_downstreams": [
+                "bounding boxes"
+              ],
+              "downstreams": [
+                "cloth-color-classification",
+                "face-detection",
+                "human-pose-detection",
+                "vehicle-color-classification",
+                "vehicle-make-classification"
+              ]
+            },
+            "ground_truth_task": {
+              "task_id": "object-detection-general",
+              "inputs_from_upstreams": [
+                "image"
+              ],
+              "upstreams": [
+                "source"
+              ],
+              "outputs_for_downstreams": [
+                "bounding boxes"
+              ],
+              "downstreams": [
+                "cloth-color-classification",
+                "face-detection",
+                "vehicle-color-classification",
+                "vehicle-make-classification"
+              ]
+            }
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 5,
+        "total_ground_truth_paths": 5,
+        "total_generated_paths": 6,
+        "accuracy": 1.0,
+        "missing_paths": [],
+        "extra_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "human-pose-detection",
+            "pipeline-end"
+          ]
+        ]
+      }
+    },
+    {
+      "example_id": "traffic-with-humans-example-1",
+      "status": "success",
+      "generated_task_count": 8,
+      "ground_truth_task_count": 8,
+      "comparison": {
+        "exact_match": true,
+        "total_tasks": 8,
+        "matched_tasks": 8,
+        "mismatches": []
+      },
+      "path_comparison": {
+        "matched_paths": 3,
+        "total_ground_truth_paths": 3,
+        "total_generated_paths": 3,
+        "accuracy": 1.0,
+        "missing_paths": [],
+        "extra_paths": []
+      }
+    },
+    {
+      "example_id": "campus-with-human-fall-example-1",
+      "status": "success",
+      "generated_task_count": 8,
+      "ground_truth_task_count": 11,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 11,
+        "generated_tasks": 8,
+        "matched_tasks": 0,
+        "mismatches": [
+          {
+            "reason": "Task count mismatch: expected 11, got 8"
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 4,
+        "total_ground_truth_paths": 6,
+        "total_generated_paths": 4,
+        "accuracy": 0.6666666666666666,
+        "missing_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "vehicle-make-classification",
+            "vehicle-plate-detection",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "vehicle-color-classification",
+            "pipeline-end"
+          ]
+        ],
+        "extra_paths": []
+      }
+    },
+    {
+      "example_id": "campus-with-human-fall-example-2",
+      "status": "success",
+      "generated_task_count": 8,
+      "ground_truth_task_count": 11,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 11,
+        "generated_tasks": 8,
+        "matched_tasks": 0,
+        "mismatches": [
+          {
+            "reason": "Task count mismatch: expected 11, got 8"
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 4,
+        "total_ground_truth_paths": 6,
+        "total_generated_paths": 4,
+        "accuracy": 0.6666666666666666,
+        "missing_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "vehicle-make-classification",
+            "vehicle-plate-detection",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "vehicle-color-classification",
+            "pipeline-end"
+          ]
+        ],
+        "extra_paths": []
+      }
+    },
+    {
+      "example_id": "campus-with-fire-example-1",
+      "status": "success",
+      "generated_task_count": 12,
+      "ground_truth_task_count": 11,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 11,
+        "generated_tasks": 12,
+        "matched_tasks": 0,
+        "mismatches": [
+          {
+            "reason": "Task count mismatch: expected 11, got 12"
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 6,
+        "total_ground_truth_paths": 6,
+        "total_generated_paths": 7,
+        "accuracy": 1.0,
+        "missing_paths": [],
+        "extra_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "face-detection",
+            "emotion-classification",
+            "pipeline-end"
+          ]
+        ]
+      }
+    },
+    {
+      "example_id": "factory-with-human-fall-example-1",
+      "status": "success",
+      "generated_task_count": 11,
+      "ground_truth_task_count": 7,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 7,
+        "generated_tasks": 11,
+        "matched_tasks": 0,
+        "mismatches": [
+          {
+            "reason": "Task count mismatch: expected 7, got 11"
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 2,
+        "total_ground_truth_paths": 4,
+        "total_generated_paths": 6,
+        "accuracy": 0.5,
+        "missing_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "equipment-detection",
+            "pipeline-end"
+          ]
+        ],
+        "extra_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "face-detection",
+            "face-recognition",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "face-detection",
+            "emotion-classification",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "face-detection",
+            "gender-classification",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "vehicle-plate-detection",
+            "pipeline-end"
+          ]
+        ]
+      }
+    },
+    {
+      "example_id": "campus-normal-example-1",
+      "status": "success",
+      "generated_task_count": 10,
+      "ground_truth_task_count": 11,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 11,
+        "generated_tasks": 10,
+        "matched_tasks": 0,
+        "mismatches": [
+          {
+            "reason": "Task count mismatch: expected 11, got 10"
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 5,
+        "total_ground_truth_paths": 6,
+        "total_generated_paths": 6,
+        "accuracy": 0.8333333333333334,
+        "missing_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "vehicle-make-classification",
+            "vehicle-plate-detection",
+            "pipeline-end"
+          ]
+        ],
+        "extra_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "vehicle-make-classification",
+            "pipeline-end"
+          ]
+        ]
+      }
+    },
+    {
+      "example_id": "campus-normal-example-2",
+      "status": "success",
+      "generated_task_count": 8,
+      "ground_truth_task_count": 11,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 11,
+        "generated_tasks": 8,
+        "matched_tasks": 0,
+        "mismatches": [
+          {
+            "reason": "Task count mismatch: expected 11, got 8"
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 4,
+        "total_ground_truth_paths": 6,
+        "total_generated_paths": 4,
+        "accuracy": 0.6666666666666666,
+        "missing_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "vehicle-make-classification",
+            "vehicle-plate-detection",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "vehicle-color-classification",
+            "pipeline-end"
+          ]
+        ],
+        "extra_paths": []
+      }
+    },
+    {
+      "example_id": "business-with-human-fall-example-1",
+      "status": "success",
+      "generated_task_count": 8,
+      "ground_truth_task_count": 8,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 8,
+        "matched_tasks": 2,
+        "mismatches": [
+          {
+            "task_index": 1,
+            "task_id": "emotion-classification",
+            "differing_fields": [
+              {
+                "field": "task_id",
+                "generated": "emotion-classification",
+                "ground_truth": "face-detection"
+              },
+              {
+                "field": "inputs_from_upstreams",
+                "generated": [
+                  "face bounding boxes"
+                ],
+                "ground_truth": [
+                  "person bounding boxes"
+                ]
+              },
+              {
+                "field": "upstreams",
+                "generated": [
+                  "face-detection"
+                ],
+                "ground_truth": [
+                  "object-detection-general"
+                ]
+              },
+              {
+                "field": "outputs_for_downstreams",
+                "generated": [
+                  "emotion labels"
+                ],
+                "ground_truth": [
+                  "face bounding boxes"
+                ]
+              },
+              {
+                "field": "downstreams",
+                "generated": [
+                  "pipeline-end"
+                ],
+                "ground_truth": [
+                  "face-recognition",
+                  "gender-classification"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "emotion-classification",
+              "inputs_from_upstreams": [
+                "face bounding boxes"
+              ],
+              "upstreams": [
+                "face-detection"
+              ],
+              "outputs_for_downstreams": [
+                "emotion labels"
+              ],
+              "downstreams": [
+                "pipeline-end"
+              ]
+            },
+            "ground_truth_task": {
+              "task_id": "face-detection",
+              "inputs_from_upstreams": [
+                "person bounding boxes"
+              ],
+              "upstreams": [
+                "object-detection-general"
+              ],
+              "outputs_for_downstreams": [
+                "face bounding boxes"
+              ],
+              "downstreams": [
+                "face-recognition",
+                "gender-classification"
+              ]
+            }
+          },
+          {
+            "task_index": 2,
+            "task_id": "face-detection",
+            "differing_fields": [
+              {
+                "field": "task_id",
+                "generated": "face-detection",
+                "ground_truth": "face-recognition"
+              },
+              {
+                "field": "inputs_from_upstreams",
+                "generated": [
+                  "person bounding boxes"
+                ],
+                "ground_truth": [
+                  "face bounding boxes"
+                ]
+              },
+              {
+                "field": "upstreams",
+                "generated": [
+                  "object-detection-general"
+                ],
+                "ground_truth": [
+                  "face-detection"
+                ]
+              },
+              {
+                "field": "outputs_for_downstreams",
+                "generated": [
+                  "face bounding boxes"
+                ],
+                "ground_truth": [
+                  "identity labels"
+                ]
+              },
+              {
+                "field": "downstreams",
+                "generated": [
+                  "emotion-classification",
+                  "face-recognition",
+                  "gender-classification"
+                ],
+                "ground_truth": [
+                  "pipeline-end"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "face-detection",
+              "inputs_from_upstreams": [
+                "person bounding boxes"
+              ],
+              "upstreams": [
+                "object-detection-general"
+              ],
+              "outputs_for_downstreams": [
+                "face bounding boxes"
+              ],
+              "downstreams": [
+                "emotion-classification",
+                "face-recognition",
+                "gender-classification"
+              ]
+            },
+            "ground_truth_task": {
+              "task_id": "face-recognition",
+              "inputs_from_upstreams": [
+                "face bounding boxes"
+              ],
+              "upstreams": [
+                "face-detection"
+              ],
+              "outputs_for_downstreams": [
+                "identity labels"
+              ],
+              "downstreams": [
+                "pipeline-end"
+              ]
+            }
+          },
+          {
+            "task_index": 3,
+            "task_id": "face-recognition",
+            "differing_fields": [
+              {
+                "field": "task_id",
+                "generated": "face-recognition",
+                "ground_truth": "gender-classification"
+              },
+              {
+                "field": "outputs_for_downstreams",
+                "generated": [
+                  "identity labels"
+                ],
+                "ground_truth": [
+                  "gender labels"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "face-recognition",
+              "inputs_from_upstreams": [
+                "face bounding boxes"
+              ],
+              "upstreams": [
+                "face-detection"
+              ],
+              "outputs_for_downstreams": [
+                "identity labels"
+              ],
+              "downstreams": [
+                "pipeline-end"
+              ]
+            },
+            "ground_truth_task": {
+              "task_id": "gender-classification",
+              "inputs_from_upstreams": [
+                "face bounding boxes"
+              ],
+              "upstreams": [
+                "face-detection"
+              ],
+              "outputs_for_downstreams": [
+                "gender labels"
+              ],
+              "downstreams": [
+                "pipeline-end"
+              ]
+            }
+          },
+          {
+            "task_index": 4,
+            "task_id": "gender-classification",
+            "differing_fields": [
+              {
+                "field": "task_id",
+                "generated": "gender-classification",
+                "ground_truth": "human-pose-detection"
+              },
+              {
+                "field": "inputs_from_upstreams",
+                "generated": [
+                  "face bounding boxes"
+                ],
+                "ground_truth": [
+                  "person bounding boxes"
+                ]
+              },
+              {
+                "field": "upstreams",
+                "generated": [
+                  "face-detection"
+                ],
+                "ground_truth": [
+                  "object-detection-general"
+                ]
+              },
+              {
+                "field": "outputs_for_downstreams",
+                "generated": [
+                  "gender labels"
+                ],
+                "ground_truth": [
+                  "pose key points"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "gender-classification",
+              "inputs_from_upstreams": [
+                "face bounding boxes"
+              ],
+              "upstreams": [
+                "face-detection"
+              ],
+              "outputs_for_downstreams": [
+                "gender labels"
+              ],
+              "downstreams": [
+                "pipeline-end"
+              ]
+            },
+            "ground_truth_task": {
+              "task_id": "human-pose-detection",
+              "inputs_from_upstreams": [
+                "person bounding boxes"
+              ],
+              "upstreams": [
+                "object-detection-general"
+              ],
+              "outputs_for_downstreams": [
+                "pose key points"
+              ],
+              "downstreams": [
+                "pipeline-end"
+              ]
+            }
+          },
+          {
+            "task_index": 5,
+            "task_id": "object-detection-general",
+            "differing_fields": [
+              {
+                "field": "downstreams",
+                "generated": [
+                  "cloth-color-classification",
+                  "face-detection"
+                ],
+                "ground_truth": [
+                  "cloth-color-classification",
+                  "face-detection",
+                  "human-pose-detection"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "object-detection-general",
+              "inputs_from_upstreams": [
+                "image"
+              ],
+              "upstreams": [
+                "source"
+              ],
+              "outputs_for_downstreams": [
+                "bounding boxes"
+              ],
+              "downstreams": [
+                "cloth-color-classification",
+                "face-detection"
+              ]
+            },
+            "ground_truth_task": {
+              "task_id": "object-detection-general",
+              "inputs_from_upstreams": [
+                "image"
+              ],
+              "upstreams": [
+                "source"
+              ],
+              "outputs_for_downstreams": [
+                "bounding boxes"
+              ],
+              "downstreams": [
+                "cloth-color-classification",
+                "face-detection",
+                "human-pose-detection"
+              ]
+            }
+          },
+          {
+            "task_index": 6,
+            "task_id": "pipeline-end",
+            "differing_fields": [
+              {
+                "field": "upstreams",
+                "generated": [
+                  "cloth-color-classification",
+                  "emotion-classification",
+                  "face-recognition",
+                  "gender-classification"
+                ],
+                "ground_truth": [
+                  "cloth-color-classification",
+                  "face-recognition",
+                  "gender-classification",
+                  "human-pose-detection"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "pipeline-end",
+              "inputs_from_upstreams": [
+                "various task outputs"
+              ],
+              "upstreams": [
+                "cloth-color-classification",
+                "emotion-classification",
+                "face-recognition",
+                "gender-classification"
+              ],
+              "outputs_for_downstreams": [
+                "none"
+              ],
+              "downstreams": []
+            },
+            "ground_truth_task": {
+              "task_id": "pipeline-end",
+              "inputs_from_upstreams": [
+                "various task outputs"
+              ],
+              "upstreams": [
+                "cloth-color-classification",
+                "face-recognition",
+                "gender-classification",
+                "human-pose-detection"
+              ],
+              "outputs_for_downstreams": [
+                "none"
+              ],
+              "downstreams": []
+            }
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 3,
+        "total_ground_truth_paths": 4,
+        "total_generated_paths": 4,
+        "accuracy": 0.75,
+        "missing_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "human-pose-detection",
+            "pipeline-end"
+          ]
+        ],
+        "extra_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "face-detection",
+            "emotion-classification",
+            "pipeline-end"
+          ]
+        ]
+      }
+    },
+    {
+      "example_id": "business-with-human-fall-example-2",
+      "status": "success",
+      "generated_task_count": 8,
+      "ground_truth_task_count": 8,
+      "comparison": {
+        "exact_match": true,
+        "total_tasks": 8,
+        "matched_tasks": 8,
+        "mismatches": []
+      },
+      "path_comparison": {
+        "matched_paths": 4,
+        "total_ground_truth_paths": 4,
+        "total_generated_paths": 4,
+        "accuracy": 1.0,
+        "missing_paths": [],
+        "extra_paths": []
+      }
+    },
+    {
+      "example_id": "factory-normal-example-1",
+      "status": "success",
+      "generated_task_count": 6,
+      "ground_truth_task_count": 6,
+      "comparison": {
+        "exact_match": true,
+        "total_tasks": 6,
+        "matched_tasks": 6,
+        "mismatches": []
+      },
+      "path_comparison": {
+        "matched_paths": 3,
+        "total_ground_truth_paths": 3,
+        "total_generated_paths": 3,
+        "accuracy": 1.0,
+        "missing_paths": [],
+        "extra_paths": []
+      }
+    },
+    {
+      "example_id": "business-with-fight-example-1",
+      "status": "success",
+      "generated_task_count": 8,
+      "ground_truth_task_count": 8,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 8,
+        "matched_tasks": 7,
+        "mismatches": [
+          {
+            "task_index": 5,
+            "task_id": "object-detection-general",
+            "differing_fields": [
+              {
+                "field": "downstreams",
+                "generated": [
+                  "cloth-color-classification",
+                  "face-detection",
+                  "human-pose-detection"
+                ],
+                "ground_truth": [
+                  "cloth-color-classification",
+                  "face-detection"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "object-detection-general",
+              "inputs_from_upstreams": [
+                "image"
+              ],
+              "upstreams": [
+                "source"
+              ],
+              "outputs_for_downstreams": [
+                "bounding boxes"
+              ],
+              "downstreams": [
+                "cloth-color-classification",
+                "face-detection",
+                "human-pose-detection"
+              ]
+            },
+            "ground_truth_task": {
+              "task_id": "object-detection-general",
+              "inputs_from_upstreams": [
+                "image"
+              ],
+              "upstreams": [
+                "source"
+              ],
+              "outputs_for_downstreams": [
+                "bounding boxes"
+              ],
+              "downstreams": [
+                "cloth-color-classification",
+                "face-detection"
+              ]
+            }
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 3,
+        "total_ground_truth_paths": 3,
+        "total_generated_paths": 4,
+        "accuracy": 1.0,
+        "missing_paths": [],
+        "extra_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "human-pose-detection",
+            "pipeline-end"
+          ]
+        ]
+      }
+    },
+    {
+      "example_id": "business-with-fight-example-2",
+      "status": "success",
+      "generated_task_count": 8,
+      "ground_truth_task_count": 8,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 8,
+        "matched_tasks": 3,
+        "mismatches": [
+          {
+            "task_index": 1,
+            "task_id": "emotion-classification",
+            "differing_fields": [
+              {
+                "field": "task_id",
+                "generated": "emotion-classification",
+                "ground_truth": "face-detection"
+              },
+              {
+                "field": "inputs_from_upstreams",
+                "generated": [
+                  "face bounding boxes"
+                ],
+                "ground_truth": [
+                  "person bounding boxes"
+                ]
+              },
+              {
+                "field": "upstreams",
+                "generated": [
+                  "face-detection"
+                ],
+                "ground_truth": [
+                  "object-detection-general"
+                ]
+              },
+              {
+                "field": "outputs_for_downstreams",
+                "generated": [
+                  "emotion labels"
+                ],
+                "ground_truth": [
+                  "face bounding boxes"
+                ]
+              },
+              {
+                "field": "downstreams",
+                "generated": [
+                  "pipeline-end"
+                ],
+                "ground_truth": [
+                  "face-recognition",
+                  "gender-classification"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "emotion-classification",
+              "inputs_from_upstreams": [
+                "face bounding boxes"
+              ],
+              "upstreams": [
+                "face-detection"
+              ],
+              "outputs_for_downstreams": [
+                "emotion labels"
+              ],
+              "downstreams": [
+                "pipeline-end"
+              ]
+            },
+            "ground_truth_task": {
+              "task_id": "face-detection",
+              "inputs_from_upstreams": [
+                "person bounding boxes"
+              ],
+              "upstreams": [
+                "object-detection-general"
+              ],
+              "outputs_for_downstreams": [
+                "face bounding boxes"
+              ],
+              "downstreams": [
+                "face-recognition",
+                "gender-classification"
+              ]
+            }
+          },
+          {
+            "task_index": 2,
+            "task_id": "face-detection",
+            "differing_fields": [
+              {
+                "field": "task_id",
+                "generated": "face-detection",
+                "ground_truth": "face-recognition"
+              },
+              {
+                "field": "inputs_from_upstreams",
+                "generated": [
+                  "person bounding boxes"
+                ],
+                "ground_truth": [
+                  "face bounding boxes"
+                ]
+              },
+              {
+                "field": "upstreams",
+                "generated": [
+                  "object-detection-general"
+                ],
+                "ground_truth": [
+                  "face-detection"
+                ]
+              },
+              {
+                "field": "outputs_for_downstreams",
+                "generated": [
+                  "face bounding boxes"
+                ],
+                "ground_truth": [
+                  "identity labels"
+                ]
+              },
+              {
+                "field": "downstreams",
+                "generated": [
+                  "emotion-classification",
+                  "face-recognition",
+                  "gender-classification"
+                ],
+                "ground_truth": [
+                  "pipeline-end"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "face-detection",
+              "inputs_from_upstreams": [
+                "person bounding boxes"
+              ],
+              "upstreams": [
+                "object-detection-general"
+              ],
+              "outputs_for_downstreams": [
+                "face bounding boxes"
+              ],
+              "downstreams": [
+                "emotion-classification",
+                "face-recognition",
+                "gender-classification"
+              ]
+            },
+            "ground_truth_task": {
+              "task_id": "face-recognition",
+              "inputs_from_upstreams": [
+                "face bounding boxes"
+              ],
+              "upstreams": [
+                "face-detection"
+              ],
+              "outputs_for_downstreams": [
+                "identity labels"
+              ],
+              "downstreams": [
+                "pipeline-end"
+              ]
+            }
+          },
+          {
+            "task_index": 3,
+            "task_id": "face-recognition",
+            "differing_fields": [
+              {
+                "field": "task_id",
+                "generated": "face-recognition",
+                "ground_truth": "gender-classification"
+              },
+              {
+                "field": "outputs_for_downstreams",
+                "generated": [
+                  "identity labels"
+                ],
+                "ground_truth": [
+                  "gender labels"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "face-recognition",
+              "inputs_from_upstreams": [
+                "face bounding boxes"
+              ],
+              "upstreams": [
+                "face-detection"
+              ],
+              "outputs_for_downstreams": [
+                "identity labels"
+              ],
+              "downstreams": [
+                "pipeline-end"
+              ]
+            },
+            "ground_truth_task": {
+              "task_id": "gender-classification",
+              "inputs_from_upstreams": [
+                "face bounding boxes"
+              ],
+              "upstreams": [
+                "face-detection"
+              ],
+              "outputs_for_downstreams": [
+                "gender labels"
+              ],
+              "downstreams": [
+                "pipeline-end"
+              ]
+            }
+          },
+          {
+            "task_index": 4,
+            "task_id": "gender-classification",
+            "differing_fields": [
+              {
+                "field": "task_id",
+                "generated": "gender-classification",
+                "ground_truth": "human-pose-detection"
+              },
+              {
+                "field": "inputs_from_upstreams",
+                "generated": [
+                  "face bounding boxes"
+                ],
+                "ground_truth": [
+                  "person bounding boxes"
+                ]
+              },
+              {
+                "field": "upstreams",
+                "generated": [
+                  "face-detection"
+                ],
+                "ground_truth": [
+                  "object-detection-general"
+                ]
+              },
+              {
+                "field": "outputs_for_downstreams",
+                "generated": [
+                  "gender labels"
+                ],
+                "ground_truth": [
+                  "pose key points"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "gender-classification",
+              "inputs_from_upstreams": [
+                "face bounding boxes"
+              ],
+              "upstreams": [
+                "face-detection"
+              ],
+              "outputs_for_downstreams": [
+                "gender labels"
+              ],
+              "downstreams": [
+                "pipeline-end"
+              ]
+            },
+            "ground_truth_task": {
+              "task_id": "human-pose-detection",
+              "inputs_from_upstreams": [
+                "person bounding boxes"
+              ],
+              "upstreams": [
+                "object-detection-general"
+              ],
+              "outputs_for_downstreams": [
+                "pose key points"
+              ],
+              "downstreams": [
+                "pipeline-end"
+              ]
+            }
+          },
+          {
+            "task_index": 6,
+            "task_id": "pipeline-end",
+            "differing_fields": [
+              {
+                "field": "upstreams",
+                "generated": [
+                  "cloth-color-classification",
+                  "emotion-classification",
+                  "face-recognition",
+                  "gender-classification"
+                ],
+                "ground_truth": [
+                  "cloth-color-classification",
+                  "face-recognition",
+                  "gender-classification",
+                  "human-pose-detection"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "pipeline-end",
+              "inputs_from_upstreams": [
+                "various task outputs"
+              ],
+              "upstreams": [
+                "cloth-color-classification",
+                "emotion-classification",
+                "face-recognition",
+                "gender-classification"
+              ],
+              "outputs_for_downstreams": [
+                "none"
+              ],
+              "downstreams": []
+            },
+            "ground_truth_task": {
+              "task_id": "pipeline-end",
+              "inputs_from_upstreams": [
+                "various task outputs"
+              ],
+              "upstreams": [
+                "cloth-color-classification",
+                "face-recognition",
+                "gender-classification",
+                "human-pose-detection"
+              ],
+              "outputs_for_downstreams": [
+                "none"
+              ],
+              "downstreams": []
+            }
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 3,
+        "total_ground_truth_paths": 3,
+        "total_generated_paths": 4,
+        "accuracy": 1.0,
+        "missing_paths": [],
+        "extra_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "face-detection",
+            "emotion-classification",
+            "pipeline-end"
+          ]
+        ]
+      }
+    },
+    {
+      "example_id": "traffic-with-fire-example-1",
+      "status": "success",
+      "generated_task_count": 13,
+      "ground_truth_task_count": 9,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 9,
+        "generated_tasks": 13,
+        "matched_tasks": 0,
+        "mismatches": [
+          {
+            "reason": "Task count mismatch: expected 9, got 13"
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 3,
+        "total_ground_truth_paths": 4,
+        "total_generated_paths": 7,
+        "accuracy": 0.75,
+        "missing_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "face-detection",
+            "pipeline-end"
+          ]
+        ],
+        "extra_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "face-detection",
+            "face-recognition",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "face-detection",
+            "emotion-classification",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "human-pose-detection",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "face-detection",
+            "gender-classification",
+            "pipeline-end"
+          ]
+        ]
+      }
+    },
+    {
+      "example_id": "traffic-with-accident-example-1",
+      "status": "success",
+      "generated_task_count": 13,
+      "ground_truth_task_count": 10,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 10,
+        "generated_tasks": 13,
+        "matched_tasks": 0,
+        "mismatches": [
+          {
+            "reason": "Task count mismatch: expected 10, got 13"
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 3,
+        "total_ground_truth_paths": 5,
+        "total_generated_paths": 7,
+        "accuracy": 0.6,
+        "missing_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "face-detection",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "vehicle-damage-detection",
+            "pipeline-end"
+          ]
+        ],
+        "extra_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "face-detection",
+            "age-classification",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "face-detection",
+            "emotion-classification",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "face-detection",
+            "gender-classification",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "face-detection",
+            "face-recognition",
+            "pipeline-end"
+          ]
+        ]
+      }
+    },
+    {
+      "example_id": "business-normal-example-1",
+      "status": "success",
+      "generated_task_count": 8,
+      "ground_truth_task_count": 8,
+      "comparison": {
+        "exact_match": true,
+        "total_tasks": 8,
+        "matched_tasks": 8,
+        "mismatches": []
+      },
+      "path_comparison": {
+        "matched_paths": 4,
+        "total_ground_truth_paths": 4,
+        "total_generated_paths": 4,
+        "accuracy": 1.0,
+        "missing_paths": [],
+        "extra_paths": []
+      }
+    },
+    {
+      "example_id": "business-normal-example-2",
+      "status": "success",
+      "generated_task_count": 4,
+      "ground_truth_task_count": 8,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 8,
+        "generated_tasks": 4,
+        "matched_tasks": 0,
+        "mismatches": [
+          {
+            "reason": "Task count mismatch: expected 8, got 4"
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 1,
+        "total_ground_truth_paths": 4,
+        "total_generated_paths": 1,
+        "accuracy": 0.25,
+        "missing_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "face-detection",
+            "face-recognition",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "face-detection",
+            "emotion-classification",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "face-detection",
+            "gender-classification",
+            "pipeline-end"
+          ]
+        ],
+        "extra_paths": []
+      }
+    },
+    {
+      "example_id": "traffic-with-no-humans-example-1",
+      "status": "success",
+      "generated_task_count": 6,
+      "ground_truth_task_count": 6,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 6,
+        "matched_tasks": 5,
+        "mismatches": [
+          {
+            "task_index": 1,
+            "task_id": "pipeline-end",
+            "differing_fields": [
+              {
+                "field": "upstreams",
+                "generated": [
+                  "vehicle-color-classification",
+                  "vehicle-plate-detection"
+                ],
+                "ground_truth": [
+                  "vehicle-plate-detection"
+                ]
+              }
+            ],
+            "generated_task": {
+              "task_id": "pipeline-end",
+              "inputs_from_upstreams": [
+                "various task outputs"
+              ],
+              "upstreams": [
+                "vehicle-color-classification",
+                "vehicle-plate-detection"
+              ],
+              "outputs_for_downstreams": [
+                "none"
+              ],
+              "downstreams": []
+            },
+            "ground_truth_task": {
+              "task_id": "pipeline-end",
+              "inputs_from_upstreams": [
+                "various task outputs"
+              ],
+              "upstreams": [
+                "vehicle-plate-detection"
+              ],
+              "outputs_for_downstreams": [
+                "none"
+              ],
+              "downstreams": []
+            }
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 2,
+        "total_ground_truth_paths": 2,
+        "total_generated_paths": 2,
+        "accuracy": 1.0,
+        "missing_paths": [],
+        "extra_paths": []
+      }
+    },
+    {
+      "example_id": "traffic-with-fight-example-1",
+      "status": "success",
+      "generated_task_count": 12,
+      "ground_truth_task_count": 9,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 9,
+        "generated_tasks": 12,
+        "matched_tasks": 0,
+        "mismatches": [
+          {
+            "reason": "Task count mismatch: expected 9, got 12"
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 2,
+        "total_ground_truth_paths": 3,
+        "total_generated_paths": 7,
+        "accuracy": 0.6666666666666666,
+        "missing_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "face-detection",
+            "pipeline-end"
+          ]
+        ],
+        "extra_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "human-pose-detection",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "face-detection",
+            "gender-classification",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "face-detection",
+            "emotion-classification",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "face-detection",
+            "face-recognition",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "cloth-color-classification",
+            "pipeline-end"
+          ]
+        ]
+      }
+    },
+    {
+      "example_id": "factory-with-fight-example-1",
+      "status": "success",
+      "generated_task_count": 9,
+      "ground_truth_task_count": 6,
+      "comparison": {
+        "exact_match": false,
+        "total_tasks": 6,
+        "generated_tasks": 9,
+        "matched_tasks": 0,
+        "mismatches": [
+          {
+            "reason": "Task count mismatch: expected 6, got 9"
+          }
+        ]
+      },
+      "path_comparison": {
+        "matched_paths": 1,
+        "total_ground_truth_paths": 3,
+        "total_generated_paths": 5,
+        "accuracy": 0.3333333333333333,
+        "missing_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "protective-gear-detection",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "equipment-detection",
+            "pipeline-end"
+          ]
+        ],
+        "extra_paths": [
+          [
+            "source",
+            "object-detection-general",
+            "face-detection",
+            "face-recognition",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "human-pose-detection",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "vehicle-damage-detection",
+            "pipeline-end"
+          ],
+          [
+            "source",
+            "object-detection-general",
+            "face-detection",
+            "gender-classification",
+            "pipeline-end"
+          ]
+        ]
+      }
+    }
+  ]
+}

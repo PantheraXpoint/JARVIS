@@ -14,6 +14,7 @@ server/models/*
 hugginggpt/server/models/*
 !hugginggpt/server/models/download.sh
 !hugginggpt/server/models/download.ps1
+hugginggpt/server/sensys/models/
 server/logs/
 server/models_dev
 server/public/*

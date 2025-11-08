@@ -1,0 +1,61 @@
+# Custom Configuration for Decision-Only Mode - Paper 2 Method
+# Uses unified prompt: single LLM call for both task parsing and model selection
+# Uses custom API tasks and models
+
+# Local LLM Configuration (Qwen 2.5 7B)
+local:
+  endpoint: http://localhost:8006  # Qwen server endpoint
+
+# HuggingFace Configuration (for model availability checks)
+huggingface:
+  token: REPLACE_WITH_YOUR_HUGGINGFACE_TOKEN_HERE  # Or set HUGGINGFACE_ACCESS_TOKEN environment variable
+
+# Development settings
+dev: true  # Enable local LLM mode
+debug: true  # Enable debug logging for testing
+log_file: logs/debug.log
+
+# Model configuration
+model: qwen-2.5-7b-instruct  # Local model name (Instruct version)
+use_completion: false  # Use chat/completions API
+
+# Inference configuration - HUGGINGFACE ONLY (no local models needed)
+inference_mode: huggingface  # Only check HuggingFace models (no local server required)
+local_deployment: minimal  # Not used in huggingface mode, but set anyway
+device: cuda:0  # Not needed for decision-only, but set anyway
+
+# Custom Model API Configuration
+model_api_base_url: http://143.248.55.143:8081  # Base URL for custom model server
+
+# Performance settings
+num_candidate_models: 5  # Show more candidates for better testing
+max_description_length: 200  # Longer descriptions for better decision-making
+
+# Network configuration
+proxy:  # Optional: your proxy server "http://ip:port"
+http_listen:
+  host: 0.0.0.0
+  port: 8005  # Different port from paper1 to avoid conflicts
+
+# Local inference endpoint (not used in huggingface mode, but required by code)
+local_inference_endpoint:
+  host: localhost
+  port: 8005
+
+# Logit bias settings
+logit_bias:
+  parse_task: 0.1
+  choose_model: 5
+
+# Prompt templates for Paper 2 method (unified 2-in-1 process)
+tprompt:
+  parse_task: demos/system_prompt_parse_task_paper2.json  # Stage 1: Task Planning (modified for 2-in-1)
+
+# Demo files - NEW PIPELINE-BASED FORMAT with sensys examples
+demos_or_presteps:
+  parse_task: demos/demo_parse_task_sensys_formatted.json  # Pipeline DAG format with scenario → tasks
+
+# Prompt templates for Paper 2 method (Stage 2: Model Selection)
+prompt:
+  choose_model: demos/user_prompt_choose_model_paper2.json  # Stage 2: Model Selection with output requirements
+

@@ -1,0 +1,233 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "Since the scenario involves a normal traffic scenario, object detection is crucial to identify all vehicles and their positions on the highway for traffic monitoring and analysis."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "vehicle-color-classification",
+        "vehicle-make-classification",
+        "cloth-color-classification"
+      ],
+      "model-chosen-reason": "YOLOv5m provides a good balance of speed and accuracy for detecting objects in a normal traffic scenario",
+      "sample-reasoning": {
+        "vehicle-color-classification": "Since the scenario involves multiple vehicles, classifying their colors is important for traffic analysis and management.",
+        "vehicle-make-classification": "Identifying the makes of vehicles is useful for traffic monitoring and law enforcement.",
+        "cloth-color-classification": "Classifying the colors of clothing worn by pedestrians is important for recognizing and identifying human subjects."
+      }
+    },
+    {
+      "id": "vehicle-color-classification",
+      "model_id": "vehiclecolor",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "VehicleColor model is specifically trained to classify vehicle colors",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after vehicle color classification."
+      }
+    },
+    {
+      "id": "vehicle-make-classification",
+      "model_id": "carbrand",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle make labels"
+      ],
+      "downstreams": [
+        "vehicle-plate-detection"
+      ],
+      "model-chosen-reason": "CarBrand model is specifically trained to classify different makes of vehicles",
+      "sample-reasoning": {
+        "vehicle-plate-detection": "Further analyzing vehicles by detecting their license plates provides a complete record for law enforcement and traffic monitoring."
+      }
+    },
+    {
+      "id": "vehicle-plate-detection",
+      "model_id": "platedet",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "vehicle-make-classification"
+      ],
+      "outputs_for_downstreams": [
+        "license plate bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "Platedet model is specifically trained to detect vehicle license plates",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after license plate detection."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "face-detection"
+      ],
+      "model-chosen-reason": "FashionColor model is specifically trained to classify clothing colors",
+      "sample-reasoning": {
+        "face-detection": "Further analyzing humans by detecting faces for identification and monitoring."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "cloth-color-classification"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition"
+      ],
+      "model-chosen-reason": "RetinaFace model is optimized for efficient face detection within specified bounding boxes",
+      "sample-reasoning": {
+        "gender-classification": "Since the scenario involves people, determining gender from detected faces is important for traffic analysis and management.",
+        "emotion-classification": "Analyzing facial expressions is important for understanding the emotional state of individuals in the traffic scenario.",
+        "face-recognition": "Identifying individuals is crucial for traffic monitoring and law enforcement."
+      }
+    },
+    {
+      "id": "gender-classification",
+      "model_id": "gender",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "gender labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "Gender model is specifically trained to classify and identify gender of faces",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after gender classification."
+      }
+    },
+    {
+      "id": "emotion-classification",
+      "model_id": "emotion",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "emotion labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "Emotion model is specifically trained to classify and identify emotions of faces",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after emotion classification."
+      }
+    },
+    {
+      "id": "face-recognition",
+      "model_id": "arcface",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "identity labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "ArcFace model is a state-of-the-art face recognition model",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after face recognition."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "pipeline-end",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition",
+        "cloth-color-classification",
+        "vehicle-color-classification",
+        "vehicle-plate-detection"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline-end task does not use any model",
+      "sample-reasoning": {}
+    }
+  ]
+}

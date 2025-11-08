@@ -1,0 +1,126 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general",
+        "equipment-detection"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "Detecting objects in the warehouse for overall scene analysis.",
+        "equipment-detection": "Detecting equipment like forklifts and robots for safety and operational monitoring."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "protective-gear-detection",
+        "cloth-color-classification"
+      ],
+      "model-chosen-reason": "The YOLOv5m model provides a good trade-off between speed and accuracy, making it suitable for real-time object detection in a warehouse setting. It can effectively detect and localize objects like vehicles, people, and other materials present in the warehouse environment. Its medium size ensures it can handle the complexity of the scene without being too computationally expensive.",
+      "sample-reasoning": {
+        "protective-gear-detection": "Detecting protective gear to ensure worker safety compliance.",
+        "cloth-color-classification": "Classifying clothing colors to better recognize and identify individuals."
+      }
+    },
+    {
+      "id": "protective-gear-detection",
+      "model_id": "geardetect",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "protective gear bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a warehouse with workers and robots, but the task requires detecting personal protective equipment (PPE) in images. The 'Gear Detection Model' is not suitable as it is trained to identify gears, not PPE. Given the lack of suitable models, we must choose the closest match, which is still not ideal but better than none. However, ideally, a model specifically trained for PPE detection would be more appropriate.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a normal warehouse with workers and materials, and the task requires classifying cloth colors based on person bounding boxes. The fashioncolor model is specifically trained to classify and identify colors in clothing items, making it highly suitable for this task. Its specialization in cloth color classification ensures accurate and reliable results, even in varying lighting conditions and with potential occlusions.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "equipment-detection",
+      "model_id": "equipmentdetect",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "equipment bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The 'equipmentdetect' model is specifically trained to identify and localize industrial equipment such as forklifts, which aligns perfectly with the task requirements. Given the scenario involves a warehouse with forklifts and other industrial equipment, this model is well-suited to detect and localize these objects in images. No other model in the list is mentioned as being specialized for industrial equipment detection, making 'equipmentdetect' the best choice.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "protective-gear-detection",
+        "cloth-color-classification",
+        "equipment-detection"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline End task doesn't need a model",
+      "sample-reasoning": {}
+    }
+  ]
+}

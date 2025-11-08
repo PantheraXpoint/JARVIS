@@ -1,0 +1,235 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "Since there is a physical altercation, detecting objects in the scene is the first step to identify relevant entities such as people and vehicles."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "face-detection",
+        "cloth-color-classification",
+        "vehicle-color-classification",
+        "vehicle-make-classification",
+        "human-pose-detection"
+      ],
+      "model-chosen-reason": "The YOLOv5m model provides a good trade-off between speed and accuracy, making it suitable for real-time object detection in a dynamic scenario like a busy street scene. It can effectively detect and localize objects such as people and vehicles, which are present in the described scenario. Additionally, its medium size makes it robust enough to handle various conditions, including potential occlusions and changes in lighting, which are common in outdoor settings.",
+      "sample-reasoning": {
+        "face-detection": "Since there is a physical altercation, detecting faces is important for identifying individuals involved in the altercation.",
+        "cloth-color-classification": "Since there is a physical altercation, classifying clothing colors is important to better recognize and identify individuals.",
+        "vehicle-color-classification": "Since there is a physical altercation, classifying vehicle colors is important for security purposes.",
+        "vehicle-make-classification": "Since there is a physical altercation, identifying vehicle makes is important for security monitoring.",
+        "human-pose-detection": "Since there is a physical altercation, human pose detection is crucial to identify such unusual activities."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "gender-classification",
+        "face-recognition"
+      ],
+      "model-chosen-reason": "The scenario involves a normal street scene with people, and the task requires face detection within specified bounding boxes. The RetinaFace on bounding boxes model is specifically optimized for efficient face detection within given areas, making it well-suited for this task. Given the presence of people in a crowded scene, this model's accuracy and efficiency in detecting faces within the provided person bounding boxes will be particularly beneficial.",
+      "sample-reasoning": {
+        "gender-classification": "Since there is a physical altercation, determining gender is important for security and safety measures.",
+        "face-recognition": "Since there is a physical altercation in the scene, identifying individuals is crucial for security and emergency response."
+      }
+    },
+    {
+      "id": "gender-classification",
+      "model_id": "gender",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "gender labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves identifying individuals, and the task requires classifying gender based on face bounding boxes. The 'Gender Classifier' model is specifically designed for this purpose and will accurately identify the gender of the individuals involved in the altercation and those watching or intervening. It is the most suitable model for this task given the clear focus on facial features and gender classification.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "face-recognition",
+      "model_id": "arcface",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "identity labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a normal street scene with people, and the task requires face recognition. ArcFace is described as a state-of-the-art face recognition model that uses deep learning techniques to accurately identify and verify faces in images, making it highly suitable for recognizing the individuals involved in the physical altercation. Its accuracy and robustness in identifying faces make it the best choice for this scenario.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves people wearing clothes, and the task requires classifying cloth colors. The fashioncolor model is specifically trained to classify and identify colors in clothing items, making it the most suitable choice for this task. Although the scenario includes a physical altercation, the primary focus is on identifying cloth colors, which aligns perfectly with the capabilities of the fashioncolor model.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "vehicle-color-classification",
+      "model_id": "vehiclecolor",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a normal street scene with people and vehicles, but there is no mention of vehicles needing color classification. The 'vehiclecolor' model is specifically designed for classifying and identifying colors in vehicles, which is not relevant to the current task of detecting a physical altercation among people. Therefore, this model is not suitable for the given task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "vehicle-make-classification",
+      "model_id": "carbrand",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle make labels"
+      ],
+      "downstreams": [
+        "vehicle-plate-detection"
+      ],
+      "model-chosen-reason": "The scenario involves a street scene with people and a physical altercation, but the task requires classifying vehicle makes. The 'carbrand' model is specifically designed for vehicle make classification, making it the most suitable choice for this task. Although the scene includes people and an altercation, the primary focus is on identifying vehicle makes, which aligns perfectly with the capabilities of the 'carbrand' model.",
+      "sample-reasoning": {
+        "vehicle-plate-detection": "Since there is a physical altercation, detecting the license plate after identifying the vehicle's make provides a complete record for security."
+      }
+    },
+    {
+      "id": "vehicle-plate-detection",
+      "model_id": "platedet",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "vehicle-make-classification"
+      ],
+      "outputs_for_downstreams": [
+        "license plate bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a normal street scene with people and a physical altercation, but there is no mention of vehicles or license plates. The task requires detecting and localizing vehicle license plates, which is directly aligned with the capabilities of the platedet model. Given that the scenario does not involve vehicles, the platedet model is still the most suitable choice due to its specialization in license plate detection, even though it might not be used in the actual scenario.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "human-pose-detection",
+      "model_id": "movenet",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "pose key points"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a dynamic and potentially chaotic situation with people in motion, making real-time pose analysis crucial. MoveNet is described as a fast and accurate pose detection model, making it well-suited for detecting and analyzing human body poses in real-time under various conditions, such as those present during a physical altercation on a busy street. Its ability to handle real-time data makes it particularly appropriate for monitoring and analyzing the movements of individuals in this scenario.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "gender-classification",
+        "face-recognition",
+        "cloth-color-classification",
+        "vehicle-color-classification",
+        "human-pose-detection",
+        "vehicle-plate-detection"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline End task doesn't need a model",
+      "sample-reasoning": {}
+    }
+  ]
+}

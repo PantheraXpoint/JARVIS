@@ -1,0 +1,123 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "In a normal traffic scenario, detecting vehicles on the road for traffic monitoring and analysis."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "vehicle-color-classification",
+        "vehicle-make-classification"
+      ],
+      "model-chosen-reason": "YOLOv5m provides a good trade-off between speed and accuracy, making it suitable for real-time object detection in a normal traffic scenario. It is capable of detecting vehicles, people, and other objects in images, which aligns well with the task requirements. Given the balanced nature of this model, it is well-suited for handling the variety of objects and conditions present on a multi-lane highway.",
+      "sample-reasoning": {
+        "vehicle-color-classification": "In a normal traffic scenario, classifying vehicle colors is important for traffic analysis and management.",
+        "vehicle-make-classification": "In a normal traffic scenario, identifying vehicle makes is important for traffic monitoring and law enforcement."
+      }
+    },
+    {
+      "id": "vehicle-color-classification",
+      "model_id": "vehiclecolor",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The 'Vehicle Color Classifier' model is specifically designed to classify and identify colors in vehicles, which aligns perfectly with the task requirements. Given the normal traffic scenario with multiple vehicles on a multi-lane highway, this model will be effective in handling the task without any additional complexity or unnecessary features. Its specialization in vehicle color classification makes it the most suitable choice for this task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "vehicle-make-classification",
+      "model_id": "carbrand",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle make labels"
+      ],
+      "downstreams": [
+        "vehicle-plate-detection"
+      ],
+      "model-chosen-reason": "The carbrand model is specifically trained to classify and identify different makes of vehicles, which aligns perfectly with the task of vehicle make classification. Given the normal traffic scenario with multiple vehicles, this model will be effective in identifying the brands of vehicles in the images provided by the vehicle bounding boxes.",
+      "sample-reasoning": {
+        "vehicle-plate-detection": "Detecting the license plate after identifying the vehicle's make provides a complete record for law enforcement and traffic monitoring."
+      }
+    },
+    {
+      "id": "vehicle-plate-detection",
+      "model_id": "platedet",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "vehicle-make-classification"
+      ],
+      "outputs_for_downstreams": [
+        "license plate bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves normal traffic conditions with multiple vehicles on a multi-lane highway, and the task requires detecting and localizing vehicle license plates. The 'platedet' model is specifically trained for identifying and localizing vehicle license plates in various conditions, making it the most suitable choice for this task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after license plate detection."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "vehicle-color-classification",
+        "vehicle-plate-detection"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline End task doesn't need a model",
+      "sample-reasoning": {}
+    }
+  ]
+}

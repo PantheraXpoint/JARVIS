@@ -1,0 +1,146 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "Since the scenario mentions a normal university campus scene with students socializing, object detection is crucial to identify all objects in the scene, including people and tables, for traffic and safety monitoring."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "face-detection",
+        "cloth-color-classification"
+      ],
+      "model-chosen-reason": "YOLOv5m provides a good balance of speed and accuracy for detecting objects in a normal campus scene",
+      "sample-reasoning": {
+        "face-detection": "Since the scenario involves students socializing, detecting faces is important for recognizing and identifying individuals, which can be useful for monitoring and safety purposes.",
+        "cloth-color-classification": "Since the scenario mentions a table covered with a blue tablecloth, classifying cloth colors is important to better recognize and identify the table and its accessories."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "gender-classification",
+        "emotion-classification"
+      ],
+      "model-chosen-reason": "RetinaFace on bounding boxes is optimized for efficient face detection within specified bounding boxes, making it suitable for a normal campus scene",
+      "sample-reasoning": {
+        "gender-classification": "Since the scenario involves students, determining gender from detected faces can help in understanding the demographic composition of the scene.",
+        "emotion-classification": "Since the scenario mentions students socializing, analyzing facial expressions can help in understanding the emotional state of the students, which can be useful for safety and well-being monitoring."
+      }
+    },
+    {
+      "id": "gender-classification",
+      "model_id": "gender",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "gender labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "Gender Classifier is specifically trained to classify and identify gender of faces in images, making it suitable for a normal campus scene",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after gender classification."
+      }
+    },
+    {
+      "id": "emotion-classification",
+      "model_id": "emotion",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "emotion labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "Emotion Classifier is specifically trained to classify and identify emotions of faces in images, making it suitable for a normal campus scene",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after emotion classification."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "Cloth Color Classifier is specifically trained to classify and identify colors in clothing items, making it suitable for a normal campus scene",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after cloth color classification."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "cloth-color-classification"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline-end task does not use any model",
+      "sample-reasoning": {}
+    }
+  ]
+}

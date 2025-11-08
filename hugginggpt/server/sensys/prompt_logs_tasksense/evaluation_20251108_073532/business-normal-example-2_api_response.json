@@ -1,0 +1,169 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "Since the scenario mentions a normal scene inside a Tokyo Diner in London, UK, with no people or pets visible, object detection is crucial to identify any potential objects or equipment that might be present in the scene."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "face-detection",
+        "cloth-color-classification"
+      ],
+      "model-chosen-reason": "YOLOv5m provides a good balance of speed and accuracy for detecting objects in a normal scene",
+      "sample-reasoning": {
+        "face-detection": "Since the scenario mentions a normal scene with no people, face detection is not necessary. However, it is included as a placeholder for potential future scenarios where people might be present.",
+        "cloth-color-classification": "Since the scenario mentions a normal scene, classifying clothing colors can help in recognizing and identifying individuals if they were present, although it is not strictly necessary given the current scenario."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition"
+      ],
+      "model-chosen-reason": "RetinaFace on bounding boxes is optimized for efficient face detection within specified bounding boxes, which is not necessary in this scenario but included as a placeholder",
+      "sample-reasoning": {
+        "gender-classification": "Since the scenario mentions a normal scene with no people, gender classification is not necessary. However, it is included as a placeholder for potential future scenarios where people might be present.",
+        "emotion-classification": "Since the scenario mentions a normal scene with no people, emotion classification is not necessary. However, it is included as a placeholder for potential future scenarios where people might be present.",
+        "face-recognition": "Since the scenario mentions a normal scene with no people, face recognition is not necessary. However, it is included as a placeholder for potential future scenarios where people might be present."
+      }
+    },
+    {
+      "id": "gender-classification",
+      "model_id": "gender",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "gender labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "Gender classifier is specifically trained to identify gender of faces, which is not necessary in this scenario but included as a placeholder",
+      "sample-reasoning": {
+        "pipeline-end": "Since the scenario mentions a normal scene with no people, gender classification is not necessary. However, it is included as a placeholder for potential future scenarios where people might be present."
+      }
+    },
+    {
+      "id": "emotion-classification",
+      "model_id": "emotion",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "emotion labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "Emotion classifier is specifically trained to identify emotions of faces, which is not necessary in this scenario but included as a placeholder",
+      "sample-reasoning": {
+        "pipeline-end": "Since the scenario mentions a normal scene with no people, emotion classification is not necessary. However, it is included as a placeholder for potential future scenarios where people might be present."
+      }
+    },
+    {
+      "id": "face-recognition",
+      "model_id": "arcface",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "identity labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "ArcFace is a state-of-the-art face recognition model, which is not necessary in this scenario but included as a placeholder",
+      "sample-reasoning": {
+        "pipeline-end": "Since the scenario mentions a normal scene with no people, face recognition is not necessary. However, it is included as a placeholder for potential future scenarios where people might be present."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "Cloth Color Classifier is specifically trained to classify and identify colors in clothing items, which is not necessary in this scenario but included as a placeholder",
+      "sample-reasoning": {
+        "pipeline-end": "Since the scenario mentions a normal scene with no people, cloth color classification is not necessary. However, it is included as a placeholder for potential future scenarios where people might be present."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "pipeline-end",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition",
+        "cloth-color-classification"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline-end task does not use any model",
+      "sample-reasoning": {}
+    }
+  ]
+}

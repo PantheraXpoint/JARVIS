@@ -1,0 +1,35 @@
+LLM Inference Timing Information - All Choose Model Calls
+================================================================================
+Timestamp: 20251108_081237
+================================================================================
+
+SUMMARY:
+- Total LLM Inference Time: 14.1320 seconds (14131.99 milliseconds)
+- Average Per Task: 2.3553 seconds (2355.33 milliseconds)
+- Number of Tasks: 6
+
+================================================================================
+PER-TASK BREAKDOWN:
+================================================================================
+
+Task: object-detection-general
+  LLM Inference Time: 2.6599 seconds (2659.95 milliseconds)
+
+Task: face-detection
+  LLM Inference Time: 2.6763 seconds (2676.31 milliseconds)
+
+Task: gender-classification
+  LLM Inference Time: 2.6440 seconds (2644.04 milliseconds)
+
+Task: face-recognition
+  LLM Inference Time: 2.1327 seconds (2132.71 milliseconds)
+
+Task: cloth-color-classification
+  LLM Inference Time: 1.7869 seconds (1786.88 milliseconds)
+
+Task: human-pose-detection
+  LLM Inference Time: 2.2321 seconds (2232.10 milliseconds)
+
+================================================================================
+END OF TIMING REPORT
+================================================================================

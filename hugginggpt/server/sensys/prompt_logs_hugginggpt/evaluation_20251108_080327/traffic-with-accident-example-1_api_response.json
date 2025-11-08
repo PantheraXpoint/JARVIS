@@ -1,0 +1,275 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "Detecting objects in the scene for traffic monitoring and analysis."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "vehicle-color-classification",
+        "vehicle-make-classification",
+        "cloth-color-classification",
+        "human-pose-detection"
+      ],
+      "model-chosen-reason": "YOLOv5m provides a good trade-off between speed and accuracy, making it suitable for real-time object detection in complex scenarios with various objects such as vehicles, pedestrians, and other elements. Its medium size ensures it can handle the diverse objects and conditions present in the described scene effectively.",
+      "sample-reasoning": {
+        "vehicle-color-classification": "Classifying vehicle colors for traffic analysis and management.",
+        "vehicle-make-classification": "Identifying vehicle makes for traffic monitoring and law enforcement.",
+        "cloth-color-classification": "Classifying clothing colors to recognize and identify individuals.",
+        "human-pose-detection": "Analyzing human poses to monitor pedestrian safety and behavior."
+      }
+    },
+    {
+      "id": "vehicle-color-classification",
+      "model_id": "vehiclecolor",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves identifying the colors of vehicles in a complex traffic scene. The 'Vehicle Color Classifier' model is specifically designed for this task and will accurately classify and identify the colors of vehicles, making it the best choice for this scenario.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after vehicle color classification."
+      }
+    },
+    {
+      "id": "vehicle-make-classification",
+      "model_id": "carbrand",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle make labels"
+      ],
+      "downstreams": [
+        "vehicle-plate-detection"
+      ],
+      "model-chosen-reason": "The scenario involves identifying different makes of vehicles, such as a red truck and a white car. The 'Vehicle Make Classifier' model is specifically designed to classify and identify different makes of vehicles, making it the most suitable choice for this task. It aligns well with the requirement to provide vehicle make labels as output based on the provided vehicle bounding boxes.",
+      "sample-reasoning": {
+        "vehicle-plate-detection": "Detecting license plates for law enforcement and traffic monitoring."
+      }
+    },
+    {
+      "id": "vehicle-plate-detection",
+      "model_id": "platedet",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "vehicle-make-classification"
+      ],
+      "outputs_for_downstreams": [
+        "license plate bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves detecting license plates on vehicles, and the platedet model is specifically trained for this task. It is designed to identify and localize vehicle license plates in various conditions, making it the most suitable choice for the given context.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after license plate detection."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "face-detection"
+      ],
+      "model-chosen-reason": "The scenario involves people wearing clothes, and the task requires classifying cloth colors. The fashioncolor model is specifically trained for cloth color classification, making it the most suitable choice for this task. Although the scenario includes various other elements, the focus is on identifying colors in clothing items, which aligns perfectly with the capabilities of the fashioncolor model.",
+      "sample-reasoning": {
+        "face-detection": "Detecting faces for identification and monitoring."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "cloth-color-classification"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "gender-classification",
+        "age-classification",
+        "emotion-classification",
+        "face-recognition"
+      ],
+      "model-chosen-reason": "The scenario involves detecting a person lying on the road, which requires accurate face detection within the bounding box of the person. RetinaFace on bounding boxes (retina1face) is specifically optimized for efficient face detection within specified bounding boxes, making it the most suitable choice for this task.",
+      "sample-reasoning": {
+        "gender-classification": "Determining gender for demographic analysis.",
+        "age-classification": "Classifying age groups for demographic analysis.",
+        "emotion-classification": "Analyzing facial expressions for safety and well-being monitoring.",
+        "face-recognition": "Identifying individuals for security and personalized services."
+      }
+    },
+    {
+      "id": "gender-classification",
+      "model_id": "gender",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "gender labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves identifying individuals, and the task requires classifying gender based on face bounding boxes. The 'Gender Classifier' model is specifically designed for this purpose, making it the most suitable choice. It aligns well with the task requirements and the presence of faces in the scene.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after gender classification."
+      }
+    },
+    {
+      "id": "age-classification",
+      "model_id": "age",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "age group labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The 'Age Classifier' model is specifically designed for age classification tasks involving face images. Given the scenario involves identifying age groups of people, this model is well-suited. It does not require any additional context beyond face bounding boxes, making it straightforward to apply in this situation.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after age classification."
+      }
+    },
+    {
+      "id": "emotion-classification",
+      "model_id": "emotion",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "emotion labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves people, but there are no faces present. The task requires emotion classification based on face bounding boxes, which is not applicable in this context since no faces are detected. Therefore, the 'emotion' model is not suitable for this scenario.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after emotion classification."
+      }
+    },
+    {
+      "id": "face-recognition",
+      "model_id": "arcface",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "identity labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves recognizing individuals, and the arcface model is specifically designed for accurate identification and verification of faces in images. Given the presence of people in the scene, including one lying on the road and another holding an umbrella, the arcface model's capability to handle face recognition tasks makes it the most suitable choice for this scenario.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after face recognition."
+      }
+    },
+    {
+      "id": "human-pose-detection",
+      "model_id": "movenet",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "pose key points"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves detecting a person lying on the road and another person holding an umbrella, which requires accurate pose detection. MoveNet is described as a fast and accurate pose detection model, making it well-suited for real-time analysis of human body poses in complex environments with various objects and conditions.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after human pose detection."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "vehicle-color-classification",
+        "vehicle-plate-detection",
+        "face-detection",
+        "human-pose-detection"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline End task doesn't need a model",
+      "sample-reasoning": {}
+    }
+  ]
+}

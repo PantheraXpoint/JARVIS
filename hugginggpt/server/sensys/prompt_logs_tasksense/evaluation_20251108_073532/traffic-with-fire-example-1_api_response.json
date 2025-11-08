@@ -1,0 +1,169 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "The scenario mentions a fire and people, so object detection is crucial to identify all objects in the scene, including vehicles, people, and the fire, for safety and emergency response."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "face-detection",
+        "fire-detection"
+      ],
+      "model-chosen-reason": "YOLOv5m provides a good balance of speed and accuracy for detecting objects in emergency scenarios",
+      "sample-reasoning": {
+        "face-detection": "Since the scenario involves people in a fire emergency, detecting faces is important for identifying individuals and ensuring their safety during evacuation.",
+        "fire-detection": "Since the scenario explicitly mentions fire, fire detection is crucial to identify and localize the fire for emergency response and safety measures."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition"
+      ],
+      "model-chosen-reason": "RetinaFace on bounding boxes is optimized for efficient face detection within specified bounding boxes",
+      "sample-reasoning": {
+        "gender-classification": "Since the scenario involves people, determining gender from detected faces can help in identifying individuals and understanding the crowd dynamics.",
+        "emotion-classification": "Analyzing facial expressions can help in assessing the emotional state of individuals, which is important for emergency response and safety.",
+        "face-recognition": "Identifying individuals is crucial for emergency response and ensuring that all affected parties are accounted for."
+      }
+    },
+    {
+      "id": "gender-classification",
+      "model_id": "gender",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "gender labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "Gender Classifier is specifically trained to classify and identify gender of faces in images",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "emotion-classification",
+      "model_id": "emotion",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "emotion labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "Emotion Classifier is specifically trained to classify and identify emotions of faces in images",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "face-recognition",
+      "model_id": "arcface",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "identity labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "ArcFace is a state-of-the-art face recognition model that accurately identifies and verifies faces in images",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "fire-detection",
+      "model_id": "firedetect",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "fire and smoke bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "Fire and Smoke Detection Model is specifically trained to identify and localize fire and smoke in various environments",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after fire detection analysis."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition",
+        "fire-detection"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline-end task does not use any model as it serves as the endpoint for the pipeline",
+      "sample-reasoning": {}
+    }
+  ]
+}

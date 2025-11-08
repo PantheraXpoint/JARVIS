@@ -1,0 +1,276 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general",
+        "fire-detection"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "Detecting vehicles and humans on the road for traffic monitoring and analysis.",
+        "fire-detection": "Detecting the fire for emergency response and safety monitoring."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "vehicle-color-classification",
+        "vehicle-make-classification",
+        "cloth-color-classification",
+        "human-pose-detection"
+      ],
+      "model-chosen-reason": "The YOLOv5m model provides a good trade-off between speed and accuracy, making it suitable for real-time object detection in complex scenarios. It can effectively detect vehicles, people, and other objects in the image, including those under challenging conditions such as low light and occlusions. The model's balanced performance makes it ideal for detecting the variety of objects present in the described scenario, including vehicles, people, and the fire.",
+      "sample-reasoning": {
+        "vehicle-color-classification": "Classifying vehicle colors for traffic analysis and management.",
+        "vehicle-make-classification": "Identifying vehicle makes for traffic monitoring and law enforcement.",
+        "cloth-color-classification": "Classifying clothing colors to recognize and identify individuals.",
+        "human-pose-detection": "Analyzing human poses to monitor the scene and ensure safety."
+      }
+    },
+    {
+      "id": "vehicle-color-classification",
+      "model_id": "vehiclecolor",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves identifying the colors of vehicles on a highway, which aligns perfectly with the Vehicle Color Classifier's purpose. The model is specifically trained for vehicle color classification, making it the most suitable choice for this task. The presence of thick smoke and various other elements in the scene does not affect the model's ability to classify vehicle colors, as it focuses solely on the vehicles within the provided bounding boxes.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after vehicle color classification."
+      }
+    },
+    {
+      "id": "vehicle-make-classification",
+      "model_id": "carbrand",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle make labels"
+      ],
+      "downstreams": [
+        "vehicle-plate-detection"
+      ],
+      "model-chosen-reason": "The scenario involves identifying vehicle makes, and the 'Vehicle Make Classifier' model is specifically designed for this task. It is the only model provided that focuses on classifying different makes of vehicles, making it the most suitable choice for the 'vehicle-make-classification' task.",
+      "sample-reasoning": {
+        "vehicle-plate-detection": "Detecting the license plate after identifying the vehicle's make for law enforcement and traffic monitoring."
+      }
+    },
+    {
+      "id": "vehicle-plate-detection",
+      "model_id": "platedet",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "vehicle-make-classification"
+      ],
+      "outputs_for_downstreams": [
+        "license plate bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a variety of objects and conditions, but the primary task is to detect and localize vehicle license plates. The platedet model is specifically trained for this purpose and can handle the task's input requirements of 'vehicle bounding boxes' to produce 'license plate bounding boxes'. Given the focus on vehicle-related tasks, this model is the most suitable choice.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after license plate detection."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "face-detection"
+      ],
+      "model-chosen-reason": "The scenario involves people wearing clothes near the fire, and the task requires identifying cloth colors. The fashioncolor model is specifically trained to classify and identify colors in clothing items, making it the most suitable choice for this task. Although the scenario includes other elements, the focus on cloth color classification aligns perfectly with the fashioncolor model's capabilities.",
+      "sample-reasoning": {
+        "face-detection": "Detecting faces to identify individuals at the scene."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "cloth-color-classification"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition"
+      ],
+      "model-chosen-reason": "The scenario involves detecting faces among other objects in a complex environment. The retina1face model is optimized for efficient face detection within specified bounding boxes, making it well-suited for localizing faces among the people gathered around the fire. Its optimized nature ensures it can handle the task effectively without being overwhelmed by the additional visual elements present in the scene.",
+      "sample-reasoning": {
+        "gender-classification": "Determining gender to monitor the scene and ensure safety.",
+        "emotion-classification": "Analyzing facial expressions to assess the emotional state of individuals.",
+        "face-recognition": "Identifying individuals to assist in emergency response and safety monitoring."
+      }
+    },
+    {
+      "id": "gender-classification",
+      "model_id": "gender",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "gender labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves identifying individuals, and the task requires classifying gender based on face bounding boxes. The 'Gender Classifier' model is specifically designed for this purpose, making it the most suitable choice. It aligns well with the task requirements and the presence of faces in the scene, despite the challenging lighting conditions due to dusk and the potential for occlusions from smoke and other elements.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after gender classification."
+      }
+    },
+    {
+      "id": "emotion-classification",
+      "model_id": "emotion",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "emotion labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves people's emotions near a fire, making emotion classification relevant. The 'Emotion Classifier' model is specifically trained for this task and can handle the task's inputs (face bounding boxes) to provide emotion labels as required outputs.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after emotion classification."
+      }
+    },
+    {
+      "id": "face-recognition",
+      "model_id": "arcface",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "identity labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The ArcFace model is a state-of-the-art face recognition model that is well-suited for recognizing and verifying identities of faces in images. Given the presence of people gathered around the fire, the ArcFace model can effectively identify and label the individuals based on their facial features. The scenario involves multiple people, and accurate face recognition is crucial for distinguishing between them. While other models might have different strengths, ArcFace is specifically designed for face recognition tasks and will perform optimally in this context.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after face recognition."
+      }
+    },
+    {
+      "id": "human-pose-detection",
+      "model_id": "movenet",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "pose key points"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The MoveNet model is a fast and accurate pose detection model that is well-suited for identifying key points of the human body in images. Given the presence of people gathered around the fire, this model will effectively detect and analyze their poses, making it the best choice for the human-pose-detection task in this scenario.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after human pose detection."
+      }
+    },
+    {
+      "id": "fire-detection",
+      "model_id": "firedetect",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "fire and smoke bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a fire on the side of the road, and the 'firedetect' model is specifically trained to identify and localize fire and smoke in various environments, making it the most suitable choice for this task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after fire detection."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "vehicle-color-classification",
+        "vehicle-plate-detection",
+        "face-detection",
+        "human-pose-detection",
+        "fire-detection"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline End task doesn't need a model",
+      "sample-reasoning": {}
+    }
+  ]
+}

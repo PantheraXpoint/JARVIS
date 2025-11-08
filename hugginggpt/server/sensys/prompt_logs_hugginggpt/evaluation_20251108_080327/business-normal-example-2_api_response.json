@@ -1,0 +1,80 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "In a normal scene, detecting objects is essential for ensuring safety and monitoring the environment."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5n",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "cloth-color-classification"
+      ],
+      "model-chosen-reason": "The YOLOv5n model is a lightweight version optimized for speed and efficiency, making it suitable for real-time object detection tasks in a normal scene without people or pets. Its smaller size and faster processing time make it ideal for this scenario where there are no specific object types requiring high accuracy, and the focus is on general object detection.",
+      "sample-reasoning": {
+        "cloth-color-classification": "In a normal scene, classifying clothing colors helps to better recognize and identify items in the environment."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a normal scene inside a Tokyo Diner in London, UK, where the task is to classify and identify colors in images. The fashioncolor model is specifically trained to classify and identify colors in clothing items, making it the most suitable choice for this task. Given that there are no people or pets in the scene, the model's focus on clothing color classification aligns perfectly with the task requirements.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "cloth-color-classification"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline End task doesn't need a model",
+      "sample-reasoning": {}
+    }
+  ]
+}

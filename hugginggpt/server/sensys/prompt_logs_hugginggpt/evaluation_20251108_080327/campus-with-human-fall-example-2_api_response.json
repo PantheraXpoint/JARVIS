@@ -1,0 +1,169 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "In a normal hallway scene, detecting humans and objects is essential for ensuring safety and monitoring student behavior."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "face-detection",
+        "cloth-color-classification",
+        "human-pose-detection"
+      ],
+      "model-chosen-reason": "The YOLOv5m model provides a good trade-off between speed and accuracy, making it suitable for real-time object detection in a normal hallway scene. It can effectively detect people (like the motionless person on the floor) and other objects (like students carrying backpacks) without being overly resource-intensive.",
+      "sample-reasoning": {
+        "face-detection": "In a normal hallway scene, detecting faces helps in analyzing student demographics and behaviors.",
+        "cloth-color-classification": "In a normal hallway scene, classifying clothing colors helps to better recognize and identify individuals.",
+        "human-pose-detection": "In a normal hallway scene, detecting the pose of a person lying motionless is crucial to identify such unusual activities."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "gender-classification",
+        "face-recognition"
+      ],
+      "model-chosen-reason": "The scenario involves a normal hallway scene with people walking and lying down. The retina1face model is optimized for efficient face detection within specified bounding boxes, making it well-suited for detecting faces among the students and the person lying down. Its optimized nature ensures better performance in this specific context compared to potentially more general models.",
+      "sample-reasoning": {
+        "gender-classification": "In a normal hallway scene, determining gender from detected faces is important for security and student analysis.",
+        "face-recognition": "In a normal hallway scene, identifying individual faces is important for security and student safety."
+      }
+    },
+    {
+      "id": "gender-classification",
+      "model_id": "gender",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "gender labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a normal hallway scene with people walking past, and the task requires gender classification of faces. The 'Gender Classifier' model is specifically designed for this purpose and will accurately identify gender from face bounding boxes, making it the most suitable choice for this scenario.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "face-recognition",
+      "model_id": "arcface",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "identity labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a normal hallway scene with people walking and lying down, and the task requires face recognition. ArcFace is described as a state-of-the-art face recognition model that uses deep learning techniques to accurately identify and verify faces in images, making it highly suitable for recognizing faces in the given environment. While other models might be available, ArcFace's accuracy and robustness in face recognition make it the best choice for this task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a person lying motionless on the floor, and the task requires classifying cloth colors. The fashioncolor model is specifically trained to classify and identify colors in clothing items, making it the most suitable choice for this task. Although the scenario includes students walking past, the focus is on the person's clothing, aligning well with the model's specialization.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "human-pose-detection",
+      "model_id": "movenet",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "pose key points"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The MoveNet model is a fast and accurate pose detection model suitable for real-time analysis. Given the scenario involves detecting a person lying motionless on the floor in a normal hallway, MoveNet's ability to identify key points of the human body makes it well-suited for this task. Additionally, its speed and accuracy are beneficial in a dynamic environment where students are walking past, ensuring the system can quickly and reliably detect the motionless person.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "gender-classification",
+        "face-recognition",
+        "cloth-color-classification",
+        "human-pose-detection"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline End task doesn't need a model",
+      "sample-reasoning": {}
+    }
+  ]
+}

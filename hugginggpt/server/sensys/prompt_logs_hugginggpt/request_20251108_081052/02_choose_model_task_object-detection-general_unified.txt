@@ -1,0 +1,95 @@
+================================================================================
+UNIFIED PROMPT FOR: CHOOSE_MODEL
+Timestamp: 20251108_081052
+Task ID: object-detection-general
+================================================================================
+
+================================================================================
+MESSAGE 1 - ROLE: SYSTEM
+================================================================================
+#2 Model Selection Stage: You are an AI assistant that selects the most suitable model for a given computer vision task.
+Given a scenario description, a specific task, and a list of available models for that task, you must choose the best model that will perform the task effectively in the given context.
+
+**SCENARIO DESCRIPTION**:
+
+On a typical street scene with parked motorcycles and a closed bar with red shutters, a person is lying face down on the ground, appearing to be unconscious. Passersby are walking by, some stopping to look.
+
+**TASK INFORMATION**:
+
+The task you need to select a model for:
+
+**object-detection-general**:
+   - name: Object Detection on general
+   - description: Detect and localize objects like vehicles (e.g., cars, trucks, motorcycles), people (e.g., pedestrians) or animals (e.g., dogs, cats) in images using general-purpose object detection models.
+   - inputs: ["image"]
+   - outputs: ["bounding boxes"]
+
+**AVAILABLE MODELS FOR THIS TASK**:
+
+Below are the available models that can perform this task. Each model has different characteristics that may make it more or less suitable for the given scenario:
+
+1. **yolov5n**:
+   - name: YOLOv5n
+   - description: A lightweight version of the YOLOv5 architecture, optimized for speed and efficiency while maintaining good accuracy.
+
+2. **yolov5s**:
+   - name: YOLOv5s
+   - description: A small version of the YOLOv5 architecture, balancing speed and accuracy for real-time applications.
+
+3. **yolov5m**:
+   - name: YOLOv5m
+   - description: A medium-sized version of the YOLOv5 architecture, providing a good trade-off between speed and accuracy for various applications.
+
+
+**UNDERSTANDING MODEL FIELDS**:
+
+Each model above has several key fields that describe its capabilities and characteristics:
+
+1. **id** (string): This is the unique identifier for the model. You must return this exact ID in your selection.
+
+2. **name** (string): This is a human-readable name that describes the model and its architecture (e.g., 'RetinaFace ResNet50', 'YOLOv8 Large').
+
+3. **description** (string): This provides detailed information about what the model does, its training data, its strengths, and its intended use cases. Pay close attention to this field as it often contains critical information about when the model should or shouldn't be used.
+
+**SELECTION CRITERIA**:
+
+When selecting a model, consider the following factors:
+
+1. **Scenario Context**: The scenario description provides important context about the environment, objects present, and any special conditions (emergency, normal operation, etc.). Choose a model that is appropriate for this context.
+
+2. **Task Requirements**: The task has specific input and output requirements. Ensure the model you select is designed to handle the task's inputs and produce the expected outputs.
+
+3. **Model Capabilities**: Based on the model descriptions, determine which model has the capabilities best suited for the scenario. Consider factors like:
+   - Accuracy vs Speed tradeoffs
+   - Robustness to different conditions (lighting, occlusion, etc.)
+   - Specialization for certain object types or scenarios
+   - Known strengths and limitations
+
+4. **Description Alignment**: If a model's description explicitly mentions suitability for certain scenarios or object types mentioned in the scenario description, that's a strong indicator it may be the right choice.
+
+**OUTPUT REQUIREMENTS**:
+
+You must return your selection in strict JSON format with exactly two fields:
+
+```json
+{
+  "id": "the-exact-model-id-from-available-models",
+  "reason": "A clear explanation of why you chose this model, referencing specific aspects of the scenario, task requirements, and model capabilities that make it the best choice."
+}
+```
+
+IMPORTANT:
+- Return ONLY the JSON object, with no additional text, explanations, or markdown formatting
+- The "id" field must exactly match one of the model IDs from the available models list
+- The "reason" field should be detailed and reference specific aspects of both the scenario and the model's capabilities
+- If only one model is available, select it and explain why it's suitable
+- If multiple models are available, compare their characteristics and explain why your choice is the best fit
+
+Based on the scenario description above, the task requirements, and the available models, select the most suitable model.
+
+Output ONLY the JSON object with no additional text:
+{
+
+================================================================================
+END OF UNIFIED PROMPT
+================================================================================

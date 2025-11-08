@@ -1,0 +1,237 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general",
+        "fire-detection"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "Detecting objects in the scene is crucial for identifying relevant entities such as forklifts and workers.",
+        "fire-detection": "Detecting the fire is crucial for emergency response and safety monitoring."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "protective-gear-detection",
+        "cloth-color-classification",
+        "vehicle-plate-detection"
+      ],
+      "model-chosen-reason": "The YOLOv5m model provides a good trade-off between speed and accuracy, making it suitable for real-time object detection in a dynamic and potentially chaotic environment like a burning factory. It can effectively detect and localize objects such as firefighters, workers, and vehicles, which are crucial for understanding the situation. The medium-sized architecture ensures robust performance under varying conditions, including potential lighting changes and occlusions caused by smoke and flames.",
+      "sample-reasoning": {
+        "protective-gear-detection": "Detecting protective gear is crucial for ensuring worker safety compliance.",
+        "cloth-color-classification": "Classifying clothing colors is important for recognizing and identifying individuals.",
+        "vehicle-plate-detection": "Detecting the license plate of the forklift is important for identifying the vehicle and monitoring its movement."
+      }
+    },
+    {
+      "id": "protective-gear-detection",
+      "model_id": "geardetect",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "protective gear bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a factory setting with firefighters and workers, and the task requires detecting personal protective equipment (PPE). The 'Gear Detection Model' is not specialized for PPE detection but is instead trained to identify gears. Given the lack of suitable alternatives, this model is the closest match and might still be useful if adapted or if there are no other options available. However, it is important to note that this model may not perform optimally for the given task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "face-detection"
+      ],
+      "model-chosen-reason": "The scenario involves identifying cloth colors, and the fashioncolor model is specifically trained for cloth color classification. Although the scenario includes a fire, the model's specialization in color identification makes it the most suitable choice for this task. The other models are not relevant to color classification.",
+      "sample-reasoning": {
+        "face-detection": "Detecting faces is important for identifying individuals in the emergency situation."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "cloth-color-classification"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition"
+      ],
+      "model-chosen-reason": "The scenario involves a chaotic emergency situation with thick smoke and potential occlusions, making it challenging for models to detect faces accurately. The RetinaFace model, specifically the optimized RetinaFace on bounding boxes, is known for its robust performance even in such adverse conditions. Its ability to detect faces within specified bounding boxes makes it particularly suitable for this task, given the presence of firefighters and workers whose faces might be partially obscured by smoke or other elements.",
+      "sample-reasoning": {
+        "gender-classification": "Determining gender is important for evacuation and safety measures.",
+        "emotion-classification": "Analyzing facial expressions is important for assessing the emotional state of individuals.",
+        "face-recognition": "Identifying individuals is crucial for security and emergency response."
+      }
+    },
+    {
+      "id": "gender-classification",
+      "model_id": "gender",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "gender labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves identifying individuals, but the task specifically requires gender classification of faces. The 'Gender Classifier' model is designed for this exact purpose, making it the most suitable choice. It does not need to handle complex fire scenarios or other objects, focusing solely on face detection and gender identification.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "emotion-classification",
+      "model_id": "emotion",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "emotion labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a fire emergency with various objects and conditions, but the task requires emotion classification of faces. The 'Emotion Classifier' model is specifically designed for this task and can accurately identify emotions from face bounding boxes, making it the most suitable choice despite the challenging environment.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "face-recognition",
+      "model_id": "arcface",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "identity labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves identifying specific individuals among firefighters and workers, which aligns well with the face recognition task. ArcFace is described as a state-of-the-art model that accurately identifies and verifies faces, making it highly suitable for recognizing identities in the given context. While other models might have different strengths, ArcFace's focus on face recognition makes it the best choice for this task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "vehicle-plate-detection",
+      "model_id": "platedet",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "license plate bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a factory setting with various objects and conditions, but the task specifically requires detecting and localizing vehicle license plates. The 'platedet' model is explicitly described as a specialized license plate detection model, making it the most suitable choice for this task. It aligns well with the input requirement of 'vehicle bounding boxes' and the output requirement of 'license plate bounding boxes'.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "fire-detection",
+      "model_id": "firedetect",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "fire and smoke bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The 'firedetect' model is specifically trained to identify and localize fire and smoke in various environments, making it highly suitable for the emergency scenario involving a large fire in a factory. Its specialization in detecting fire and smoke aligns well with the task requirements and the presence of flames and smoke in the described scenario.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after fire detection analysis."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "protective-gear-detection",
+        "cloth-color-classification",
+        "face-detection",
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition",
+        "vehicle-plate-detection",
+        "fire-detection"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline End task doesn't need a model",
+      "sample-reasoning": {}
+    }
+  ]
+}

@@ -1,0 +1,1520 @@
+================================================================================
+UNIFIED PROMPT FOR: PARSE_TASK
+Timestamp: 20251108_081712
+================================================================================
+
+================================================================================
+MESSAGE 1 - ROLE: SYSTEM
+================================================================================
+#1 Task Planning Stage: You are an AI assistant that constructs computer vision task execution pipelines.
+Given a scenario description, you must generate a detailed task execution pipeline as a Directed Acyclic Graph (DAG).
+
+**AVAILABLE TASK TYPES** - You MUST select tasks ONLY from the following list (use these exact task IDs):
+
+1. **source**:
+   - name: Source Task
+   - description: The that streams inputs data into the pipeline.
+   - inputs: ["none"]
+   - outputs: ["image"]
+
+2. **object-detection-general**:
+   - name: Object Detection on general
+   - description: Detect and localize objects like vehicles (e.g., cars, trucks, motorcycles), people (e.g., pedestrians) or animals (e.g., dogs, cats) in images using general-purpose object detection models.
+   - inputs: ["image"]
+   - outputs: ["bounding boxes"]
+
+3. **face-detection**:
+   - name: Face Detection
+   - description: Detect and localize human faces in images using specialized face detection models.
+   - inputs: ["person bounding boxes"]
+   - outputs: ["face bounding boxes"]
+
+4. **vehicle-plate-detection**:
+   - name: License Plate Detection
+   - description: Detect and localize vehicle license plates in images using specialized license plate detection models.
+   - inputs: ["vehicle bounding boxes"]
+   - outputs: ["license plate bounding boxes"]
+
+5. **vehicle-damage-detection**:
+   - name: Vehicle Damage Detection
+   - description: Detect and localize damages on vehicles in images using specialized vehicle damage detection models.
+   - inputs: ["vehicle bounding boxes"]
+   - outputs: ["damage bounding boxes"]
+
+6. **protective-gear-detection**:
+   - name: Protective Gear Detection
+   - description: Detect and localize personal protective equipment (PPE) in images using specialized gear detection models.
+   - inputs: ["person bounding boxes"]
+   - outputs: ["protective gear bounding boxes"]
+
+7. **equipment-detection**:
+   - name: Equipment Detection
+   - description: Detect and localize industrial equipment (e.g., forklifts) in images using specialized equipment detection models.
+   - inputs: ["image"]
+   - outputs: ["equipment bounding boxes"]
+
+8. **fire-detection**:
+   - name: Fire and Smoke Detection
+   - description: Detect and localize fire and smoke in images using specialized fire detection models.
+   - inputs: ["image"]
+   - outputs: ["fire and smoke bounding boxes"]
+
+9. **cloth-color-classification**:
+   - name: Cloth Color Classification
+   - description: Classify and identify colors in images using specialized color classification models.
+   - inputs: ["person bounding boxes"]
+   - outputs: ["cloth color labels"]
+
+10. **vehicle-color-classification**:
+   - name: Vehicle Color Classification
+   - description: Classify and identify colors of vehicles in images using specialized vehicle color classification models.
+   - inputs: ["vehicle bounding boxes"]
+   - outputs: ["vehicle color labels"]
+
+11. **gender-classification**:
+   - name: Gender Classification
+   - description: Classify and identify gender of faces in images
+   - inputs: ["face bounding boxes"]
+   - outputs: ["gender labels"]
+
+12. **age-classification**:
+   - name: Age Classification
+   - description: Classify and identify age groups of faces in images
+   - inputs: ["face bounding boxes"]
+   - outputs: ["age group labels"]
+
+13. **emotion-classification**:
+   - name: Emotion Classification
+   - description: Classify and identify emotions of faces in images
+   - inputs: ["face bounding boxes"]
+   - outputs: ["emotion labels"]
+
+14. **face-recognition**:
+   - name: Face Recognition
+   - description: Recognize and verify identities of faces in images using specialized face recognition models.
+   - inputs: ["face bounding boxes"]
+   - outputs: ["identity labels"]
+
+15. **vehicle-make-classification**:
+   - name: Vehicle Make Classification
+   - description: Classify and identify brands of vehicles in images using specialized vehicle brand classification models.
+   - inputs: ["vehicle bounding boxes"]
+   - outputs: ["vehicle make labels"]
+
+16. **human-pose-detection**:
+   - name: Pose Detection
+   - description: Detect and analyze human body poses in images using specialized pose detection models.
+   - inputs: ["person bounding boxes"]
+   - outputs: ["pose key points"]
+
+17. **pipeline-end**:
+   - name: Pipeline End Task
+   - description: The task that marks the end of the pipeline.
+   - inputs: ["various task outputs"]
+   - outputs: ["none"]
+
+**UNDERSTANDING TASK FIELDS**:
+
+Each task type above has 4 key fields that describe its purpose and data requirements. Let me explain what each field means:
+
+1. **name** (string): This is a human-readable label that clearly identifies what the task does. For instance, the Source Task is the pipeline entry point, Face Detection clearly describes that it detects faces, and Vehicle Color Classification describes that it classifies vehicle colors.
+
+2. **description** (string): This provides a detailed explanation of what the task does, which models it uses, and its purpose. For example, object detection on general images uses models trained on the COCO dataset to detect and localize everyday objects. Fire detection is more specialized, using models specifically trained to detect fire and smoke. Gender classification analyzes human faces to determine gender.
+
+3. **inputs** (array of strings): This specifies what type of data the task needs to work. Think of it as the raw materials required for the task to operate. The source task doesn't need anything since it's where data enters the pipeline. Most detection tasks need raw images to analyze. However, some tasks are more specialized and need preprocessed data - for example, to detect faces, you first need to know where people are in the image, so face detection requires person bounding boxes from a previous detection step. Similarly, to classify someone's gender, you need to have already detected and located their face, so gender classification needs face bounding boxes as input.
+
+4. **outputs** (array of strings): This tells you what type of data the task produces, which other tasks can then use. The source task provides the raw image that flows through the pipeline. Detection tasks produce bounding boxes that mark where objects are located. Classification tasks produce labels that describe attributes - for instance, vehicle color classification outputs color information like "red" or "blue". The pipeline-end task is unique because it's the final node and doesn't produce any output.
+
+**EXECUTION FLOW RULES**:
+
+Now let's talk about how tasks connect and execute in the pipeline. Understanding these rules is crucial for building valid task execution graphs.
+
+1. **Pipeline Structure**:
+   Every valid pipeline must have a clear beginning and end. The source node is always your starting point - it's where data enters the system. The pipeline-end node is always your final node - it collects all the results and marks completion. Between these two endpoints, your tasks must form a Directed Acyclic Graph (DAG), which means data flows in one direction only and never loops back on itself. You cannot have circular dependencies where Task A depends on Task B, and Task B depends on Task A.
+
+2. **Task Dependencies**:
+   Tasks execute based on their dependencies. A task cannot start until all its upstream tasks have completed successfully. For example, if you want to detect faces and classify gender, the gender classification task must wait for both object detection (to find people) and face detection (to locate faces) to finish first. However, when multiple tasks share the same upstream dependencies and don't depend on each other, they can run in parallel to save time. For instance, once you've detected faces, you can simultaneously run gender classification, age classification, and emotion classification since they all just need face bounding boxes and don't depend on each other's results. Finally, the pipeline-end node serves as the collection point - it must list every terminal task (tasks that no other task depends on) in its upstream dependencies to ensure nothing is left hanging.
+
+3. **Input-Output Matching**:
+   The most important rule is that a task's input requirements must be satisfied by an upstream task's output. Think of it like connecting puzzle pieces - they need to fit together. Let me give you some concrete examples: If you want to detect faces, the face detection task requires person bounding boxes as input. This means you need an upstream task that outputs person bounding boxes, which would be the object-detection-general task. Similarly, if you want to classify gender, the gender-classification task needs face bounding boxes as input, so it must depend on the face-detection task which produces exactly that output. Another example: to classify vehicle colors, you need vehicle bounding boxes, so vehicle-color-classification must come after object-detection-general which detects vehicles. The chain continues: to detect license plates, you need vehicle bounding boxes first, then the vehicle-plate-detection task can locate the plates on those vehicles.
+
+**OUTPUT REQUIREMENTS**:
+
+Now that you understand the available tasks and how they connect, let's talk about the output format you need to produce. You will see few-shot examples below that demonstrate the exact output format you should follow. Your output must adhere to these requirements:
+- Return ONLY a JSON array of task objects, with no additional text or explanations outside the array
+- Each task must have exactly 6 fields: id, inputs_from_upstreams, upstreams, outputs_for_downstreams, downstreams, and sample-reasoning. The sample-reasoning field is REQUIRED and must be an object (dictionary) where keys are task IDs from the downstreams array (MANDATORY - you must explain why you chose each downstream task). The values are strings explaining your decision-making process, including why you chose certain downstream tasks, why you excluded others (especially important in special scenarios), and references to specific parts of the scenario description. Do NOT include a "general" key - only use task IDs from the downstreams array as keys.
+- Do not include any explanatory text, comments, or markdown formatting - just the raw JSON array
+- If the scenario cannot be parsed, is unclear, or is invalid, simply return an empty array []
+
+Below are examples demonstrating how to construct task pipelines from scenario descriptions. Understanding the relationship between input scenarios and output task pipelines is crucial for successfully generating computer vision task execution graphs.
+
+**UNDERSTANDING THE INPUT-OUTPUT RELATIONSHIP**:
+
+Think of this as a translation task. You receive a scenario that describes a visual scene (the INPUT), and you need to generate a structured task pipeline (the OUTPUT) that processes that scene effectively. The scenario field is what you analyze, and the tasks field is what you produce based on that analysis.
+
+**INPUT FORMAT - The Scenario**:
+
+When you receive a scenario, it contains a single key field that guides your task selection:
+
+**sample-description** (string): This provides a detailed narrative description of the scene and what's happening. It tells you what objects are present in the scene (e.g., cars, trucks, people, fire) and gives you context about the situation - whether it's normal, an emergency, an accident, or something else. For instance, if the description mentions "A fire is burning", that indicates an emergency and you should include fire detection. If it says "People engaged in physical altercation", that's a fight scenario where emotion classification would be unreliable and should be excluded. If someone is "lying motionless on ground", that indicates potential injury and you should include pose detection. The context from this description determines which tasks are relevant and which should be excluded. You should infer what objects are present from the description itself.
+
+**OUTPUT FORMAT - The Tasks**:
+
+When you construct the task pipeline, each task must have exactly 6 required fields. Let me explain what each field means and how to use it:
+
+1. **id** (string): This is the task type identifier that you select from the available task types list. It must be one of the exact task IDs provided earlier, such as "source", "object-detection-general", "face-detection", or "pipeline-end".
+
+2. **inputs_from_upstreams** (array of strings): This semantically describes what type of data this task receives as input. It tells you what data flows into this task and must match the "outputs_for_downstreams" of the upstream tasks that feed into it. For example, the source task has ["none"] because it's the entry point, the first processing task typically has ["image"] from the source, and face detection would have ["person bounding boxes"] from object detection.
+
+3. **upstreams** (array of strings): This lists the specific task IDs that must complete before this task can run. It defines which tasks this task depends on and determines the execution order in the DAG. For instance, source has ["none"], object detection has ["source"], and face detection has ["object-detection-general"].
+
+4. **outputs_for_downstreams** (array of strings): This semantically describes what type of data this task produces. It tells you what data flows out of this task and must match the "inputs_from_upstreams" of any downstream tasks that consume its output. For example, source outputs ["image"], object detection outputs ["bounding boxes"], and face detection outputs ["face bounding boxes"].
+
+5. **downstreams** (array of strings): This lists the specific task IDs that will run after this task completes. It defines which tasks depend on this task's output and determines the execution flow in the DAG. For instance, the source task might have ["object-detection-general"], and face detection might have ["gender-classification", "face-recognition"].
+
+6. **sample-reasoning** (object/dictionary): This field explains your decision-making process. It must be an object (dictionary) where keys are task IDs from the downstreams array (MANDATORY - you must explain why you chose each downstream task). The values are strings explaining why you chose certain downstream tasks, why you excluded others (especially important in special scenarios), and references to specific parts of the scenario description. This field is REQUIRED in your output - you must include it for each task with meaningful explanations that demonstrate your understanding of the scenario and your reasoning for task selection. Do NOT include a "general" key - only use task IDs from the downstreams array as keys.
+
+Now let's look at examples across different scenario types. Each example shows the scenario input, the corresponding task pipeline output, and an analysis explaining the key decisions.
+
+**EXAMPLE 1 - Business Normal**:
+
+Scenario:
+{
+  "sample-description": "A quiet street with several parked scooters and motorcycles, no people visible, and the shops have closed shutters."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general"],
+    "sample-reasoning": {"object-detection-general": "In a normal business setting, even when there are no activities (e.g., shop is closed), detecting humans is important for security surveillance (e.g., against trespassing or vandalism)."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["face-detection", "cloth-color-classification"],
+    "sample-reasoning": {"face-detection": "In a normal business scene, even when there are no ones present (e.g., closed shop), detecting faces can help monitor for unauthorized access or security breaches.", "cloth-color-classification": "In a normal business, even when there are no ones present (e.g., closed shop), classifying clothing colors can assist in identifying potential intruders or unauthorized personnel."}
+  },
+  {
+    "id": "face-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["face bounding boxes"],
+    "downstreams": ["gender-classification", "emotion-classification", "face-recognition"],
+    "sample-reasoning": {"gender-classification": "In a normal scene, even when there are no ones present, determining gender from detected faces can help monitor for unauthorized access or security breaches.", "emotion-classification": "In a normal scene, even when there are no ones present, analyzing facial expressions can help monitor for unauthorized access or security breaches.", "face-recognition": "In a normal scene, even when there are no ones present, identifying individuals can help monitor for unauthorized access or security breaches."}
+  },
+  {
+    "id": "gender-classification",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["gender labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "emotion-classification",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["emotion labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "face-recognition",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["identity labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["gender-classification", "emotion-classification", "face-recognition", "cloth-color-classification"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for business normal scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 2 - Business With Fight**:
+
+Scenario:
+{
+  "sample-description": "Inside a busy restaurant, two individuals are engaged in a physical altercation, with one person grabbing the other by the collar. Other patrons are seated at tables, dining and conversing."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general"],
+    "sample-reasoning": {"object-detection-general": "Since there is a fight, detecting humans in business settings to ensure safety and security."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["face-detection", "cloth-color-classification"],
+    "sample-reasoning": {"face-detection": "Since there is a fight, detecting faces is important for identifying individuals involved in the altercation.", "cloth-color-classification": "Since there is an altercation, classifying clothing colors to better recognize and identify individuals."}
+  },
+  {
+    "id": "face-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["face bounding boxes"],
+    "downstreams": ["gender-classification", "face-recognition"],
+    "sample-reasoning": {"gender-classification": "Since there is a fight, determining gender is important for security and safety measures.", "face-recognition": "Since there is a fight in the scene, identifying individuals is crucial for security and emergency response."}
+  },
+  {
+    "id": "gender-classification",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["gender labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "face-recognition",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["identity labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "human-pose-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["pose key points"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["gender-classification", "face-recognition", "cloth-color-classification", "human-pose-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for business with fight scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 3 - Business With Fire**:
+
+Scenario:
+{
+  "sample-description": "Inside a Tokyo Diner in London, flames and thick smoke are billowing out from a window of a building adjacent to the diner. Patrons are seated at tables, engaging in conversations and dining."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general", "fire-detection"],
+    "sample-reasoning": {"object-detection-general": "Since there is a fire, object-detection-general is crucial for safety and emergency response.", "fire-detection": "Since there is a fire, fire detection is crucial to identify and respond to the emergency situation."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["face-detection", "cloth-color-classification"],
+    "sample-reasoning": {"face-detection": "Since there is a fire, detecting faces is important for identifying individuals in the emergency situation.", "cloth-color-classification": "Since there is a fire, classifying clothing colors to better recognize and identify individuals."}
+  },
+  {
+    "id": "face-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["face bounding boxes"],
+    "downstreams": ["gender-classification", "face-recognition"],
+    "sample-reasoning": {"gender-classification": "Since there is a fire, determining gender is important for evacuation and safety measures.", "face-recognition": "Since there is a fire in the scene, identifying individuals is crucial for security and emergency response."}
+  },
+  {
+    "id": "gender-classification",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["gender labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "face-recognition",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["identity labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "fire-detection",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["fire and smoke bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["gender-classification", "face-recognition", "cloth-color-classification", "fire-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for business with fire scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 4 - Business With Human Fall**:
+
+Scenario:
+{
+  "sample-description": "Inside a Tokyo Diner in London, a person is lying on the floor, appearing to be unconscious. Patrons are seated at tables, eating and interacting."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general"],
+    "sample-reasoning": {"object-detection-general": "When there is a person lying on the floor, detecting humans in business settings to ensure safety."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["face-detection", "cloth-color-classification", "human-pose-detection"],
+    "sample-reasoning": {"face-detection": "Since there is a person lying on the ground, detecting faces is important for identifying individuals in the emergency situation.", "cloth-color-classification": "Since there is a person lying on the ground, classifying clothing colors to better recognize and identify individuals.", "human-pose-detection": "Since there is a person lying on the ground, appearing to be unconscious, human pose detection is crucial to identify such unusual activities."}
+  },
+  {
+    "id": "face-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["face bounding boxes"],
+    "downstreams": ["gender-classification", "face-recognition"],
+    "sample-reasoning": {"gender-classification": "Since there is a person lying on the ground, determining gender from detected faces is important for security and safety.", "face-recognition": "Since there is a person lying on the ground, identifying individual faces is important for security and personalized services."}
+  },
+  {
+    "id": "gender-classification",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["gender labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "face-recognition",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["identity labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "human-pose-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["pose key points"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["gender-classification", "face-recognition", "cloth-color-classification", "human-pose-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for business with human fall scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 5 - Campus Normal**:
+
+Scenario:
+{
+  "sample-description": "A person is walking on a paved pathway with herringbone patterns, casting long shadows due to the sun's position. The area appears to be a public space with trees and barriers in the background."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general"],
+    "sample-reasoning": {"object-detection-general": "In a normal campus scene, detecting humans and vehicles is essential for ensuring safety and monitoring student behavior."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["face-detection", "cloth-color-classification", "vehicle-color-classification", "vehicle-make-classification"],
+    "sample-reasoning": {"face-detection": "In a normal campus scene, detecting faces helps in campus scenes to analyze student demographics and behaviors.", "cloth-color-classification": "In a normal campus scene, classifying clothing colors helps to better recognize and identify individuals.", "vehicle-color-classification": "In a normal campus scene, classifying vehicle colors helps parking management and security purposes.", "vehicle-make-classification": "In a normal campus scene, identifying vehicle makes helps parking enforcement and security monitoring."}
+  },
+  {
+    "id": "face-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["face bounding boxes"],
+    "downstreams": ["gender-classification", "emotion-classification", "face-recognition"],
+    "sample-reasoning": {"gender-classification": "In a normal campus scene, determining gender from detected faces is important for security and student analysis.", "emotion-classification": "In a normal campus scene, Analyzing facial expressions is important for security and student well-being.", "face-recognition": "In a normal campus scene, Identifying individuals is important for security and student safety."}
+  },
+  {
+    "id": "gender-classification",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["gender labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "emotion-classification",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["emotion labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "face-recognition",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["identity labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-color-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-make-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle make labels"],
+    "downstreams": ["vehicle-plate-detection"],
+    "sample-reasoning": {"vehicle-plate-detection": "In a normal campus scene, detecting the license plate provides a complete record for parking management and security."}
+  },
+  {
+    "id": "vehicle-plate-detection",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["vehicle-make-classification"],
+    "outputs_for_downstreams": ["license plate bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["gender-classification", "emotion-classification", "face-recognition", "cloth-color-classification", "vehicle-color-classification", "vehicle-plate-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for campus normal scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 6 - Campus With Fight**:
+
+Scenario:
+{
+  "sample-description": "On a paved path bordered by trees and buildings, a group of people are gathered around a car, with some appearing distressed or in confrontation."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general"],
+    "sample-reasoning": {"object-detection-general": "Since there is a fight, detecting objects in the scene is the first step to identify relevant entities such as people and vehicles."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["face-detection", "cloth-color-classification", "vehicle-color-classification", "vehicle-make-classification"],
+    "sample-reasoning": {"face-detection": "Since there is a fight, detecting faces is important for identifying individuals involved in the altercation.", "cloth-color-classification": "Since there is an altercation, classifying clothing colors to better recognize and identify individuals.", "vehicle-color-classification": "Since there is a fight, classifying vehicle colors is important for security purposes.", "vehicle-make-classification": "Since there is a fight, identifying vehicle makes is important for security monitoring."}
+  },
+  {
+    "id": "face-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["face bounding boxes"],
+    "downstreams": ["gender-classification", "face-recognition"],
+    "sample-reasoning": {}
+  },
+  {
+    "id": "gender-classification",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["gender labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "face-recognition",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["identity labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-color-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-make-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle make labels"],
+    "downstreams": ["vehicle-plate-detection"],
+    "sample-reasoning": {"vehicle-plate-detection": "Since there is a fight, detecting the license plate after identifying the vehicle's make provides a complete record for security."}
+  },
+  {
+    "id": "vehicle-plate-detection",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["vehicle-make-classification"],
+    "outputs_for_downstreams": ["license plate bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "human-pose-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["pose key points"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["gender-classification", "face-recognition", "human-pose-detection", "cloth-color-classification", "vehicle-color-classification", "vehicle-plate-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for campus with fight scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 7 - Campus With Fire**:
+
+Scenario:
+{
+  "sample-description": "On a normal university campus scene, students are walking on sidewalks while a person rides a bicycle nearby. Flames and smoke are rising from an excavator at a construction site."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general", "fire-detection"],
+    "sample-reasoning": {"object-detection-general": "Since there is a fire in the scene, detecting humans and vehicles on campus is important for safety monitoring and emergency response.", "fire-detection": "Since there is a fire in the scene, detecting the fire's location and intensity is crucial for emergency response."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["face-detection", "cloth-color-classification", "vehicle-color-classification", "vehicle-make-classification"],
+    "sample-reasoning": {"face-detection": "Since there is a fire, detecting faces is important for identifying individuals in the emergency situation.", "cloth-color-classification": "Since there is a fire, classifying clothing colors is important to better recognize and identify individuals.", "vehicle-color-classification": "Since there is a fire, classifying vehicle colors is important for parking management and security purposes.", "vehicle-make-classification": "Since there is a fire, identifying vehicle makes is important for parking enforcement and security monitoring."}
+  },
+  {
+    "id": "face-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["face bounding boxes"],
+    "downstreams": ["gender-classification", "face-recognition"],
+    "sample-reasoning": {"gender-classification": "Since there is a fire, determining gender is important for evacuation and safety measures.", "face-recognition": "Since there is a fire in the scene, identifying individuals is crucial for security and emergency response."}
+  },
+  {
+    "id": "gender-classification",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["gender labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "face-recognition",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["identity labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-color-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-make-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle make labels"],
+    "downstreams": ["vehicle-plate-detection"],
+    "sample-reasoning": {}
+  },
+  {
+    "id": "vehicle-plate-detection",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["vehicle-make-classification"],
+    "outputs_for_downstreams": ["license plate bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "fire-detection",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["fire and smoke bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["gender-classification", "face-recognition", "cloth-color-classification", "vehicle-color-classification", "vehicle-plate-detection", "fire-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for campus with fire scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 8 - Campus With Human Fall**:
+
+Scenario:
+{
+  "sample-description": "On a normal university campus scene with students walking on sidewalks, a person is lying motionless on the grass. Nearby, someone is riding a bicycle."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general"],
+    "sample-reasoning": {"object-detection-general": "Since there is a person lying motionless, detecting humans is crucial for emergency response and safety analysis."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["face-detection", "cloth-color-classification", "vehicle-color-classification", "vehicle-make-classification", "human-pose-detection"],
+    "sample-reasoning": {"face-detection": "Since there is a person lying motionless on the grass, detecting faces is important for identifying individuals in the emergency situation.", "cloth-color-classification": "Since there is a person lying motionless, classifying clothing colors to better recognize and identify individuals.", "vehicle-color-classification": "Since there is a person lying motionless on the grass, classifying vehicle colors for parking management and security purposes.", "vehicle-make-classification": "Since there is a person lying motionless on the grass, identifying vehicle makes for parking enforcement and security monitoring.", "human-pose-detection": "Since there is a person lying motionless on the grass, human pose detection is crucial to identify such unusual activities."}
+  },
+  {
+    "id": "face-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["face bounding boxes"],
+    "downstreams": ["gender-classification", "face-recognition"],
+    "sample-reasoning": {"gender-classification": "Since there is a person lying motionless on the grass, determining gender is important for emergency response and safety measures.", "face-recognition": "Since there is a person lying motionless on the grass, identifying individuals is crucial for security and emergency response."}
+  },
+  {
+    "id": "gender-classification",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["gender labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "face-recognition",
+    "inputs_from_upstreams": ["face bounding boxes"],
+    "upstreams": ["face-detection"],
+    "outputs_for_downstreams": ["identity labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-color-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-make-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle make labels"],
+    "downstreams": ["vehicle-plate-detection"],
+    "sample-reasoning": {"vehicle-plate-detection": "Since there is a person lying motionless on the grass, detecting the license plate provides a complete record for safety purposes and incident documentation."}
+  },
+  {
+    "id": "vehicle-plate-detection",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["vehicle-make-classification"],
+    "outputs_for_downstreams": ["license plate bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "human-pose-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["pose key points"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["gender-classification", "face-recognition", "cloth-color-classification", "vehicle-color-classification", "human-pose-detection", "vehicle-plate-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for campus with human fall scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 9 - Factory Normal**:
+
+Scenario:
+{
+  "sample-description": "A normal factory floor with workers performing tasks at designated workstations or operating machinery. People are walking in marked pedestrian walkways. Vehicles (e.g., forklifts, AMRs) move in designated lanes. Materials and equipment are staged in appropriate, marked areas. The environment is free of fire, smoke, physical altercations, and fallen persons."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general", "equipment-detection"],
+    "sample-reasoning": {"object-detection-general": "In a normal factory setting, detecting objects is crucial for ensuring safety and operational efficiency.", "equipment-detection": "In a normal factory setting, detecting equipment is essential for monitoring usage and ensuring safety protocols are followed."}
+  },
+  {
+    "id": "equipment-detection",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["equipment bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["protective-gear-detection", "cloth-color-classification"],
+    "sample-reasoning": {"protective-gear-detection": "In a normal factory setting, detecting protective gear is crucial for ensuring worker safety compliance.", "cloth-color-classification": "In a normal factory setting, classifying clothing colors is crucial to better recognize and identify individuals."}
+  },
+  {
+    "id": "protective-gear-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["protective gear bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["protective-gear-detection", "cloth-color-classification", "equipment-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for factory normal scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 10 - Factory With Fight**:
+
+Scenario:
+{
+  "sample-description": "On a normal factory floor, two individuals are engaged in aggressive physical contact near a counter, involving punches and shoving. Nearby, other workers are operating machinery and walking in marked pedestrian walkways. A forklift is moving pallets in a designated lane."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general", "equipment-detection"],
+    "sample-reasoning": {"object-detection-general": "Since there is a fight, detecting objects is crucial for ensuring safety.", "equipment-detection": "Since there is a fight, detecting equipment is essential for monitoring safety protocols."}
+  },
+  {
+    "id": "equipment-detection",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["equipment bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["protective-gear-detection", "cloth-color-classification"],
+    "sample-reasoning": {"protective-gear-detection": "Since there is a fight, detecting protective gear is crucial to ensure worker safety.", "cloth-color-classification": "Since there is a fight, classifying clothing colors is crucial to better recognize and identify individuals."}
+  },
+  {
+    "id": "protective-gear-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["protective gear bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["protective-gear-detection", "cloth-color-classification", "equipment-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for factory with fight scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 11 - Factory With Human Fall**:
+
+Scenario:
+{
+  "sample-description": "In a warehouse with shelves and equipment in the background, a large fire is engulfing a building, with flames and thick black smoke billowing out. Firefighters are actively spraying water on the fire."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general", "equipment-detection", "fire-detection"],
+    "sample-reasoning": {"object-detection-general": "Since there is a fire, object-detection-general is crucial for safety and emergency response.", "equipment-detection": "Since there is a fire, equipment-detection is crucial for monitoring safety protocols.", "fire-detection": "Since there is a fire, fire detection is crucial to identify and respond to the emergency situation."}
+  },
+  {
+    "id": "equipment-detection",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["equipment bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["protective-gear-detection", "cloth-color-classification"],
+    "sample-reasoning": {"protective-gear-detection": "Since there is a fire, detecting protective gear is crucial to ensure worker safety.", "cloth-color-classification": "Since there is a fire, classifying clothing colors is crucial to better recognize and identify individuals."}
+  },
+  {
+    "id": "protective-gear-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["protective gear bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "fire-detection",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["fire and smoke bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["protective-gear-detection", "cloth-color-classification", "fire-detection", "equipment-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for factory with human fall scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 12 - Traffic With Accident**:
+
+Scenario:
+{
+  "sample-description": "A white car has collided with a bicycle, causing the cyclist to fall onto the road. The cyclist is lying on the ground near the bicycle. Vehicles are moving along their respective lanes, and pedestrians are walking on the sidewalks."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general"],
+    "sample-reasoning": {"object-detection-general": "Detecting vehicles and humans on the road for traffic monitoring and analysis."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["vehicle-damage-detection", "vehicle-color-classification", "vehicle-make-classification", "cloth-color-classification", "human-pose-detection"],
+    "sample-reasoning": {"vehicle-damage-detection": "Since there is a traffic accident, vehicle damage detection is included to assess the extent of damages.", "vehicle-color-classification": "Since there is a traffic accident, vehicle color classification is included for better identification of involved vehicles.", "vehicle-make-classification": "Since there is a traffic accident, vehicle make classification is included for better identification of involved vehicles.", "cloth-color-classification": "Since there are humans present, cloth color classification is included to better recognize and identify individuals.", "human-pose-detection": "Since there are humans present in the accident, human pose detection is included to monitor involved individuals and ensure pedestrian safety."}
+  },
+  {
+    "id": "vehicle-damage-detection",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["damage bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-color-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-make-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle make labels"],
+    "downstreams": ["vehicle-plate-detection"],
+    "sample-reasoning": {"vehicle-plate-detection": "Since there is a traffic accident, further analyzing vehicles by detecting their license plates for law enforcement and traffic monitoring."}
+  },
+  {
+    "id": "vehicle-plate-detection",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["vehicle-make-classification"],
+    "outputs_for_downstreams": ["license plate bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["face-detection"],
+    "sample-reasoning": {"face-detection": "Further analyzing humans by detecting faces for identification and monitoring."}
+  },
+  {
+    "id": "face-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["cloth-color-classification"],
+    "outputs_for_downstreams": ["face bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "human-pose-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["pose key points"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["vehicle-damage-detection", "vehicle-color-classification", "vehicle-plate-detection", "face-detection", "human-pose-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for traffic with accident scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 13 - Traffic With Fight**:
+
+Scenario:
+{
+  "sample-description": "On a quiet urban street with various shops and pedestrians walking along the sidewalk, a group of people are engaged in a physical altercation; one individual is on the ground while others stand around them. Vehicles are parked or moving slowly nearby."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general"],
+    "sample-reasoning": {"object-detection-general": "helps Detecting vehicles and humans on the road for traffic monitoring and analysis."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["vehicle-color-classification", "vehicle-make-classification", "cloth-color-classification"],
+    "sample-reasoning": {"vehicle-color-classification": "Since there are humans involved in a fight, classifying vehicle colors is important for emergency response and identification.", "vehicle-make-classification": "Since there are humans involved in a fight, identifying vehicle makes is important for emergency response and identification.", "cloth-color-classification": "Since there are humans involved in a fight, classifying clothing colors is important for recognizing and identifying individuals."}
+  },
+  {
+    "id": "vehicle-color-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-make-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle make labels"],
+    "downstreams": ["vehicle-plate-detection"],
+    "sample-reasoning": {"vehicle-plate-detection": "Since there is a fight, further analyzing vehicles by detecting their license plates for identification and monitoring."}
+  },
+  {
+    "id": "vehicle-plate-detection",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["vehicle-make-classification"],
+    "outputs_for_downstreams": ["license plate bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["face-detection"],
+    "sample-reasoning": {}
+  },
+  {
+    "id": "face-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["cloth-color-classification"],
+    "outputs_for_downstreams": ["face bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "human-pose-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["pose key points"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["vehicle-color-classification", "vehicle-plate-detection", "face-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for traffic with fight scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 14 - Traffic With Fire**:
+
+Scenario:
+{
+  "sample-description": "In a typical urban intersection with multiple vehicles, including a red car and a white car, and a bicycle moving according to traffic signals, a large fire is burning in a vehicle. Flames and smoke are billowing out, and two firefighters are actively using hoses to extinguish the blaze."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general", "fire-detection"],
+    "sample-reasoning": {"object-detection-general": "helps Detecting vehicles and humans on the road for traffic monitoring and analysis.", "fire-detection": "Since fire incidents can escalate quickly, fire detection is crucial for timely emergency response and safety monitoring."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["vehicle-color-classification", "vehicle-make-classification", "cloth-color-classification"],
+    "sample-reasoning": {"vehicle-color-classification": "Since there is a fire incident, classifying vehicle colors is important for emergency response and identification.", "vehicle-make-classification": "Since there is a fire incident, identifying vehicle makes is important for emergency response and identification.", "cloth-color-classification": "Since there is a fire incident, classifying clothing colors is important for recognizing and identifying individuals."}
+  },
+  {
+    "id": "vehicle-color-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-make-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle make labels"],
+    "downstreams": ["vehicle-plate-detection"],
+    "sample-reasoning": {"vehicle-plate-detection": "Since there is a fire incident, further analyzing vehicles by detecting their license plates for identification and monitoring."}
+  },
+  {
+    "id": "vehicle-plate-detection",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["vehicle-make-classification"],
+    "outputs_for_downstreams": ["license plate bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["face-detection"],
+    "sample-reasoning": {"face-detection": "Since there is a fire incident, further analyzing humans by detecting faces for identification and monitoring."}
+  },
+  {
+    "id": "face-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["cloth-color-classification"],
+    "outputs_for_downstreams": ["face bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "fire-detection",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["fire and smoke bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after fire detection analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["vehicle-color-classification", "vehicle-plate-detection", "face-detection", "fire-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for traffic with fire scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 15 - Traffic With Humans**:
+
+Scenario:
+{
+  "sample-description": "A roundabout with multiple lanes of traffic, including cars and a bicycle, moving smoothly around a central island with trees and benches. Pedestrians are walking on sidewalks and crossing at intersections."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general"],
+    "sample-reasoning": {"object-detection-general": "In a normal traffic scenario, detecting vehicles and humans on the road for traffic monitoring and analysis."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["vehicle-color-classification", "vehicle-make-classification", "cloth-color-classification"],
+    "sample-reasoning": {"vehicle-color-classification": "In a normal traffic scenario, classifying vehicle colors is important for traffic analysis and management.", "vehicle-make-classification": "In a normal traffic scenario, identifying vehicle makes is important for traffic monitoring and law enforcement.", "cloth-color-classification": "In a normal traffic scenario, classifying clothing colors is important for recognizing and identifying human subjects."}
+  },
+  {
+    "id": "vehicle-color-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-make-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle make labels"],
+    "downstreams": ["vehicle-plate-detection"],
+    "sample-reasoning": {"vehicle-plate-detection": "Further analyzing vehicles by detecting their license plates for law enforcement and traffic monitoring."}
+  },
+  {
+    "id": "vehicle-plate-detection",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["vehicle-make-classification"],
+    "outputs_for_downstreams": ["license plate bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "cloth-color-classification",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["cloth color labels"],
+    "downstreams": ["face-detection"],
+    "sample-reasoning": {"face-detection": "Further analyzing humans by detecting faces for identification and monitoring."}
+  },
+  {
+    "id": "face-detection",
+    "inputs_from_upstreams": ["person bounding boxes"],
+    "upstreams": ["cloth-color-classification"],
+    "outputs_for_downstreams": ["face bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["vehicle-color-classification", "vehicle-plate-detection", "face-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for traffic with humans scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+**EXAMPLE 16 - Traffic With No Humans**:
+
+Scenario:
+{
+  "sample-description": "A multi-lane highway with several cars traveling in different lanes. The road is clear of debris and pedestrians are not visible."
+}
+
+Tasks:
+[
+  {
+    "id": "source",
+    "inputs_from_upstreams": ["none"],
+    "upstreams": ["none"],
+    "outputs_for_downstreams": ["image"],
+    "downstreams": ["object-detection-general"],
+    "sample-reasoning": {"object-detection-general": "In a normal traffic scenario without pedestrians, detecting vehicles on the road for traffic monitoring and analysis."}
+  },
+  {
+    "id": "object-detection-general",
+    "inputs_from_upstreams": ["image"],
+    "upstreams": ["source"],
+    "outputs_for_downstreams": ["bounding boxes"],
+    "downstreams": ["vehicle-color-classification", "vehicle-make-classification"],
+    "sample-reasoning": {"vehicle-color-classification": "In a normal traffic scenario without humans, classifying vehicle colors is important for traffic analysis and management.", "vehicle-make-classification": "In a normal traffic scenario without humans, identifying vehicle makes is important for traffic monitoring and law enforcement."}
+  },
+  {
+    "id": "vehicle-color-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle color labels"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after analysis."}
+  },
+  {
+    "id": "vehicle-make-classification",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["object-detection-general"],
+    "outputs_for_downstreams": ["vehicle make labels"],
+    "downstreams": ["vehicle-plate-detection"],
+    "sample-reasoning": {"vehicle-plate-detection": "Detecting the license plate after identifying the vehicle's make provides a complete record for law enforcement and traffic monitoring."}
+  },
+  {
+    "id": "vehicle-plate-detection",
+    "inputs_from_upstreams": ["vehicle bounding boxes"],
+    "upstreams": ["vehicle-make-classification"],
+    "outputs_for_downstreams": ["license plate bounding boxes"],
+    "downstreams": ["pipeline-end"],
+    "sample-reasoning": {"pipeline-end": "Finalizing the pipeline after license plate detection."}
+  },
+  {
+    "id": "pipeline-end",
+    "inputs_from_upstreams": ["various task outputs"],
+    "upstreams": ["vehicle-plate-detection"],
+    "outputs_for_downstreams": ["none"],
+    "downstreams": [],
+    "sample-reasoning": {}
+  }
+]
+
+Analysis:
+This example demonstrates task pipeline construction for traffic with no humans scenarios. The pipeline shows appropriate task selection based on the scenario description, with proper dependencies and data flow.
+
+
+Given the following scenario, generate a complete task execution pipeline.
+
+Scenario:
+{
+  "sample-description": "In a typical urban intersection, a crowd of people is gathered around a car, with some individuals appearing to be in a physical altercation. The car is parked on the side of the road, and several people are standing close to it, interacting with each other. Vehicles, including cars and trucks, are moving through the intersection at a moderate pace, and pedestrians are crossing at designated crosswalks."
+}
+
+Based on the objects present and the scene description, construct a task pipeline (DAG) that:
+1. Starts with the "source" node
+2. Includes all necessary processing tasks from the available task types
+3. Ends with the "pipeline-end" node
+4. Has proper dependencies (follow the dependency guidelines and data flow patterns)
+
+IMPORTANT: You must include exactly 6 fields per task, matching the format shown in the examples above. Include these fields: id, inputs_from_upstreams, upstreams, outputs_for_downstreams, downstreams, and sample-reasoning. The sample-reasoning field is REQUIRED and must be an object (dictionary) where keys are task IDs from the downstreams array (MANDATORY - you must explain why you chose each downstream task). The values are strings explaining your decision-making process, including why you chose certain downstream tasks, why you excluded others, and references to specific parts of the scenario description. Do NOT include a "general" key - only use task IDs from the downstreams array as keys.
+
+Output ONLY the JSON array with no additional text:
+[
+
+================================================================================
+END OF UNIFIED PROMPT
+================================================================================

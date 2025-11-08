@@ -1,0 +1,192 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general",
+        "fire-detection"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "Detecting objects in the scene to identify relevant entities such as people, vehicles, and the fire.",
+        "fire-detection": "Detecting the fire to identify the emergency situation and respond accordingly."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "face-detection",
+        "cloth-color-classification"
+      ],
+      "model-chosen-reason": "The YOLOv5m model provides a good trade-off between speed and accuracy, making it suitable for real-time object detection in a complex scene with various objects such as parked motorcycles, a person walking a dog, and a large fire. Its medium size ensures it can handle the diverse objects and conditions present in the scenario without being overly resource-intensive.",
+      "sample-reasoning": {
+        "face-detection": "Detecting faces to identify individuals in the scene.",
+        "cloth-color-classification": "Classifying clothing colors to better recognize and identify individuals."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition"
+      ],
+      "model-chosen-reason": "The scenario involves a variety of objects and conditions, but the primary focus is on detecting human faces. The retina1face model is specifically designed for efficient face detection within specified bounding boxes, making it well-suited for this task. Although the scene includes a fire and other distractions, the model's specialization in face detection ensures accurate localization of human faces, which is the core requirement of the task.",
+      "sample-reasoning": {
+        "gender-classification": "Determining gender from detected faces is important for security and safety measures.",
+        "emotion-classification": "Analyzing facial expressions is important for security and emergency response.",
+        "face-recognition": "Identifying individuals is crucial for security and emergency response."
+      }
+    },
+    {
+      "id": "gender-classification",
+      "model_id": "gender",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "gender labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a variety of objects and situations, but the task requires gender classification of faces. The 'Gender Classifier' model is specifically designed for this task and can accurately identify gender from face bounding boxes, making it the most suitable choice for the given context.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "emotion-classification",
+      "model_id": "emotion",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "emotion labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a variety of objects and situations, but the task requires emotion classification of faces. The 'Emotion Classifier' model is specifically designed for this task and can accurately identify emotions from face bounding boxes, making it the most suitable choice for the given context.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "face-recognition",
+      "model_id": "arcface",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "identity labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a variety of objects and conditions, but the task requires face recognition. The ArcFace model is described as a state-of-the-art face recognition model, making it the most suitable choice for identifying faces in the given context. While the scenario includes a fire and other elements, the primary focus is on recognizing faces, which aligns perfectly with the capabilities of the ArcFace model.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a person walking a dog, which includes clothing, but the task is focused on cloth color classification. The fashioncolor model is specifically trained to classify and identify colors in clothing items, making it the most suitable choice for this task. Although the scenario also includes a fire, the model's specialization in clothing color classification aligns well with the task requirements.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "fire-detection",
+      "model_id": "firedetect",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "fire and smoke bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a large fire with flames and smoke, which aligns perfectly with the task of detecting and localizing fire and smoke. The 'firedetect' model is specifically trained for this purpose and is therefore the most suitable choice for this emergency situation.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after fire detection analysis."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition",
+        "cloth-color-classification",
+        "fire-detection"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline End task doesn't need a model",
+      "sample-reasoning": {}
+    }
+  ]
+}

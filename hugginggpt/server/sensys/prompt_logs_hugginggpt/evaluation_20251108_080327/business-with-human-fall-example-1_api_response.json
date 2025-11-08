@@ -1,0 +1,169 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "Detecting objects in the scene to identify the person lying on the ground and passersby."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "face-detection",
+        "cloth-color-classification"
+      ],
+      "model-chosen-reason": "The YOLOv5m model provides a good trade-off between speed and accuracy, making it suitable for real-time object detection in a complex street scene. It can effectively detect vehicles like motorcycles, people, and other objects present in the scenario, including the person lying unconscious and passersby. Its medium size ensures it can handle the variety of objects and conditions described without being overly resource-intensive.",
+      "sample-reasoning": {
+        "face-detection": "Detecting faces to identify the person lying on the ground and passersby.",
+        "cloth-color-classification": "Classifying clothing colors to better recognize and identify individuals."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition"
+      ],
+      "model-chosen-reason": "The scenario involves detecting a person who is lying face down, which requires accurate face detection. The retina1face model is optimized for efficient face detection within specified bounding boxes, making it well-suited for this task. Given the presence of passersby and the need to identify the person's face, this model's accuracy and efficiency are crucial.",
+      "sample-reasoning": {
+        "gender-classification": "Determining gender from detected faces is important for security and safety measures.",
+        "emotion-classification": "Analyzing facial expressions is important for security and emergency response.",
+        "face-recognition": "Identifying individuals is crucial for security and emergency response."
+      }
+    },
+    {
+      "id": "gender-classification",
+      "model_id": "gender",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "gender labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves identifying individuals, and the task requires gender classification of faces. The 'Gender Classifier' model is specifically designed for this purpose and will accurately identify the gender of the person lying on the ground. Although the scenario includes other elements like parked motorcycles and passersby, the primary focus is on classifying the gender of the individual in question, making this model the most suitable choice.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "emotion-classification",
+      "model_id": "emotion",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "emotion labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a person lying face down on the ground, and the task requires emotion classification of faces. The 'Emotion Classifier' model is specifically designed for this purpose and will accurately identify emotions from the face of the person in distress, making it the best choice for this emergency situation.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "face-recognition",
+      "model_id": "arcface",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "identity labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves recognizing individuals, and ArcFace is described as a state-of-the-art face recognition model that uses deep learning techniques to accurately identify and verify faces in images. Given the task requires face recognition and the presence of people in the scene, ArcFace is the most suitable model due to its specialized focus on face recognition accuracy and verification.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a person lying on the ground, and while the task is focused on cloth color classification, the 'fashioncolor' model is specifically trained for this purpose. Although the scenario includes other elements like passersby and a closed bar, the primary focus is on identifying cloth colors, making 'fashioncolor' the most appropriate choice among the available models.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition",
+        "cloth-color-classification"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline End task doesn't need a model",
+      "sample-reasoning": {}
+    }
+  ]
+}

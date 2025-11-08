@@ -1,0 +1,166 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "In a busy urban street, detecting vehicles and pedestrians is crucial for traffic monitoring and safety analysis."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "vehicle-color-classification",
+        "vehicle-make-classification",
+        "cloth-color-classification"
+      ],
+      "model-chosen-reason": "The YOLOv5m model provides a good trade-off between speed and accuracy, making it suitable for detecting and localizing objects like vehicles and pedestrians in a busy urban street scenario. Its medium size ensures it can handle the complexity of the environment without being too computationally expensive.",
+      "sample-reasoning": {
+        "vehicle-color-classification": "In a busy urban street, classifying vehicle colors is important for traffic analysis and management.",
+        "vehicle-make-classification": "In a busy urban street, identifying vehicle makes is important for traffic monitoring and law enforcement.",
+        "cloth-color-classification": "In a busy urban street, classifying clothing colors is important for recognizing and identifying human subjects."
+      }
+    },
+    {
+      "id": "vehicle-color-classification",
+      "model_id": "vehiclecolor",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a busy urban street with various vehicles, and the task requires classifying the colors of these vehicles. The 'Vehicle Color Classifier' model is specifically designed for this purpose, making it the most suitable choice for the given context.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "vehicle-make-classification",
+      "model_id": "carbrand",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle make labels"
+      ],
+      "downstreams": [
+        "vehicle-plate-detection"
+      ],
+      "model-chosen-reason": "The scenario involves a variety of vehicles such as a blue truck, a white car, and a person on a bicycle. The task requires classifying and identifying brands of vehicles, and the 'carbrand' model is specifically trained to classify different makes of vehicles, making it the most suitable choice for this task.",
+      "sample-reasoning": {
+        "vehicle-plate-detection": "Further analyzing vehicles by detecting their license plates for law enforcement and traffic monitoring."
+      }
+    },
+    {
+      "id": "vehicle-plate-detection",
+      "model_id": "platedet",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "vehicle-make-classification"
+      ],
+      "outputs_for_downstreams": [
+        "license plate bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a busy urban street with various vehicles, and the task requires detecting and localizing vehicle license plates. The 'platedet' model is specifically trained for identifying and localizing vehicle license plates in various conditions, making it the most suitable choice for this task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "face-detection"
+      ],
+      "model-chosen-reason": "The scenario involves a person on a bicycle, which includes clothing items. The fashioncolor model is specifically trained to classify and identify colors in clothing items, making it the most suitable choice for this task. Although the scenario also includes vehicles, the primary focus is on the person's clothing, aligning well with the model's specialization.",
+      "sample-reasoning": {
+        "face-detection": "Further analyzing humans by detecting faces for identification and monitoring."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "cloth-color-classification"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves a busy urban street with various vehicles and pedestrians, and the task requires detecting and localizing human faces. The retina1face model is specifically optimized for efficient face detection within specified bounding boxes, making it well-suited for this environment and task. Its optimized nature ensures better performance in handling the diverse and dynamic conditions present in a bustling city setting.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "vehicle-color-classification",
+        "vehicle-plate-detection",
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline End task doesn't need a model",
+      "sample-reasoning": {}
+    }
+  ]
+}

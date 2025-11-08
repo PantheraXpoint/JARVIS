@@ -1,0 +1,21 @@
+{
+  "template_array": [
+    "Given the following scenario, generate a complete task execution pipeline.",
+    "",
+    "Scenario:",
+    "{",
+    "  \"sample-description\": \"{{input}}\"",
+    "}",
+    "",
+    "Based on the objects present and the scene description, construct a task pipeline (DAG) that:",
+    "1. Starts with the \"source\" node",
+    "2. Includes all necessary processing tasks from the available task types",
+    "3. Ends with the \"pipeline-end\" node",
+    "4. Has proper dependencies (follow the dependency guidelines and data flow patterns)",
+    "",
+    "IMPORTANT: You must include exactly 6 fields per task, matching the format shown in the examples above. Include these fields: id, inputs_from_upstreams, upstreams, outputs_for_downstreams, downstreams, and sample-reasoning. The sample-reasoning field is REQUIRED and must be an object (dictionary) where keys are task IDs from the downstreams array (MANDATORY - you must explain why you chose each downstream task). The values are strings explaining your decision-making process, including why you chose certain downstream tasks, why you excluded others, and references to specific parts of the scenario description. Do NOT include a \"general\" key - only use task IDs from the downstreams array as keys.",
+    "",
+    "Output ONLY the JSON array with no additional text:",
+    "["
+  ]
+}

@@ -1,0 +1,14 @@
+LLM Inference Timing Information
+================================================================================
+Request Type: PARSE_TASK
+Timestamp: 20251108_081645
+
+================================================================================
+LLM Inference Time: 19.0073 seconds
+LLM Inference Time: 19007.27 milliseconds
+
+This timing measures:
+- Start: When the prompt is sent to the LLM endpoint
+- End: When the LLM response is received
+- Duration: Time taken for LLM inference only (not including prompt preparation or response parsing)
+================================================================================

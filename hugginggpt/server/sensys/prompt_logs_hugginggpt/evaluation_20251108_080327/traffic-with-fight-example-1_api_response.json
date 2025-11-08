@@ -1,0 +1,258 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "In a typical urban intersection, detecting objects is crucial for ensuring safety and emergency response."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "face-detection",
+        "cloth-color-classification",
+        "vehicle-color-classification",
+        "vehicle-make-classification",
+        "human-pose-detection"
+      ],
+      "model-chosen-reason": "The YOLOv5m model provides a good trade-off between speed and accuracy, making it suitable for real-time object detection in a complex urban intersection scenario. It can effectively detect and localize vehicles, people, and other objects present in the scene, such as cars, trucks, pedestrians, and possibly animals. Its medium size ensures it can handle the variety of objects and conditions described in the scenario without being overly resource-intensive.",
+      "sample-reasoning": {
+        "face-detection": "In a typical urban intersection, detecting faces is important for identifying individuals in the emergency situation.",
+        "cloth-color-classification": "In a typical urban intersection, classifying clothing colors is important to better recognize and identify individuals.",
+        "vehicle-color-classification": "In a typical urban intersection, classifying vehicle colors is important for traffic management and security purposes.",
+        "vehicle-make-classification": "In a typical urban intersection, identifying vehicle makes is important for traffic monitoring and law enforcement.",
+        "human-pose-detection": "In a typical urban intersection, detecting human poses is crucial to identify unusual activities and ensure pedestrian safety."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition"
+      ],
+      "model-chosen-reason": "The scenario involves a crowded urban intersection with various objects and people, and the task requires detecting faces within specified bounding boxes. The RetinaFace model, specifically the optimized RetinaFace on bounding boxes, is well-suited for this task due to its accuracy in face detection and efficiency in processing within given boundaries. Its optimized nature makes it particularly robust in handling the diverse and potentially cluttered environment described.",
+      "sample-reasoning": {
+        "gender-classification": "In a typical urban intersection, determining gender is important for evacuation and safety measures.",
+        "emotion-classification": "In a typical urban intersection, analyzing facial expressions is important for security and emergency response.",
+        "face-recognition": "In a typical urban intersection, identifying individuals is crucial for security and emergency response."
+      }
+    },
+    {
+      "id": "gender-classification",
+      "model_id": "gender",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "gender labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The 'Gender Classifier' model is specifically designed to classify and identify gender of faces in images, which aligns perfectly with the task requirements. Although the scenario involves a complex environment with various objects and activities, the model's focus on face detection and gender classification makes it the most suitable choice for identifying genders among the people in the image. No other model in the list is dedicated to this specific task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "emotion-classification",
+      "model_id": "emotion",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "emotion labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The 'Emotion Classifier' model is specifically designed to classify and identify emotions of faces in images, which aligns perfectly with the task requirements. Given the scenario involves a crowd of people, including those potentially involved in a physical altercation, this model can effectively analyze the emotional states of individuals in the scene. Although the scenario includes various elements such as vehicles and pedestrians, the primary focus is on emotion classification, making this model the most suitable choice.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "face-recognition",
+      "model_id": "arcface",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "identity labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The ArcFace model is a state-of-the-art face recognition model that is highly accurate in identifying and verifying faces in images. Given the presence of a crowd and potential altercations, the ability to robustly recognize individual faces is crucial. The scenario involves a variety of lighting conditions and potential occlusions due to the crowd, making a model with high accuracy and robustness essential. ArcFace meets these criteria and is well-suited for recognizing faces in such a dynamic and complex environment.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves people in a crowded urban intersection, and the task requires classifying cloth colors. The fashioncolor model is specifically trained to classify and identify colors in clothing items, making it the most suitable choice for this task. Although the scenario includes various elements like vehicles and pedestrians, the focus on cloth color classification aligns perfectly with the capabilities of the fashioncolor model.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "vehicle-color-classification",
+      "model_id": "vehiclecolor",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves identifying the colors of vehicles in an urban intersection, which aligns perfectly with the Vehicle Color Classifier's purpose. The model is specifically trained for vehicle color classification, making it the most suitable choice for this task. There are no other models available for comparison in this task, so the Vehicle Color Classifier is the clear best fit.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "vehicle-make-classification",
+      "model_id": "carbrand",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "vehicle make labels"
+      ],
+      "downstreams": [
+        "vehicle-plate-detection"
+      ],
+      "model-chosen-reason": "The scenario involves identifying different makes of vehicles in an urban intersection, and the 'Vehicle Make Classifier' model is specifically designed for this task. It is the only model available that matches the required input of 'vehicle bounding boxes' and produces the expected output of 'vehicle make labels'. Given the presence of various vehicles in the scene, this model will be effective in classifying the makes of the vehicles, including the one parked on the side of the road and those moving through the intersection.",
+      "sample-reasoning": {
+        "vehicle-plate-detection": "In a typical urban intersection, detecting the license plate after identifying the vehicle's make provides a complete record for traffic monitoring and law enforcement."
+      }
+    },
+    {
+      "id": "vehicle-plate-detection",
+      "model_id": "platedet",
+      "inputs_from_upstreams": [
+        "vehicle bounding boxes"
+      ],
+      "upstreams": [
+        "vehicle-make-classification"
+      ],
+      "outputs_for_downstreams": [
+        "license plate bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The scenario involves vehicles in an urban intersection, and the task requires detecting and localizing vehicle license plates. The 'platedet' model is specifically trained for identifying and localizing vehicle license plates in various conditions, making it the most suitable choice for this task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "human-pose-detection",
+      "model_id": "movenet",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "pose key points"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "MoveNet is a fast and accurate pose detection model that is well-suited for real-time analysis of human body poses in images. Given the dynamic nature of the scene with people interacting and vehicles moving, MoveNet's speed and accuracy will help in promptly identifying and analyzing the human poses, even in a crowded and potentially chaotic urban intersection setting.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analysis."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition",
+        "cloth-color-classification",
+        "vehicle-color-classification",
+        "vehicle-plate-detection",
+        "human-pose-detection"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "Pipeline End task doesn't need a model",
+      "sample-reasoning": {}
+    }
+  ]
+}

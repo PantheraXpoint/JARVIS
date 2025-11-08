@@ -1,0 +1,8 @@
+{
+  "template_array": [
+    "Based on the scenario description above, the task requirements, and the available models, select the most suitable model.",
+    "",
+    "Output ONLY the JSON object with no additional text:",
+    "{"
+  ]
+}

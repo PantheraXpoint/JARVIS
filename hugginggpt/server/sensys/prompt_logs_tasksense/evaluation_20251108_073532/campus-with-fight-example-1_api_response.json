@@ -1,0 +1,215 @@
+{
+  "tasks": [
+    {
+      "id": "source",
+      "model_id": "none",
+      "inputs_from_upstreams": [
+        "none"
+      ],
+      "upstreams": [
+        "none"
+      ],
+      "outputs_for_downstreams": [
+        "image"
+      ],
+      "downstreams": [
+        "object-detection-general"
+      ],
+      "model-chosen-reason": "Source task doesn't need a model",
+      "sample-reasoning": {
+        "object-detection-general": "Since the scenario mentions a physical altercation on a normal street, object detection is crucial to identify all objects in the scene, including people and vehicles, for safety and emergency response."
+      }
+    },
+    {
+      "id": "object-detection-general",
+      "model_id": "yolov5m",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "source"
+      ],
+      "outputs_for_downstreams": [
+        "bounding boxes"
+      ],
+      "downstreams": [
+        "face-detection",
+        "cloth-color-classification",
+        "human-pose-detection",
+        "fire-detection"
+      ],
+      "model-chosen-reason": "YOLOv5m provides a good balance of speed and accuracy for detecting objects in a normal street scene with people and vehicles.",
+      "sample-reasoning": {
+        "face-detection": "Since the scenario involves people in a physical altercation, detecting faces is important for identifying individuals and understanding the dynamics of the conflict.",
+        "cloth-color-classification": "Since the scenario mentions people, classifying clothing colors can help in recognizing and identifying individuals.",
+        "human-pose-detection": "Since the scenario involves people in a physical altercation, analyzing human poses can help in understanding the actions and movements of the individuals involved.",
+        "fire-detection": "Although the scenario does not explicitly mention fire, having fire detection as a precautionary measure is important for overall safety and emergency response."
+      }
+    },
+    {
+      "id": "face-detection",
+      "model_id": "retina1face",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "face bounding boxes"
+      ],
+      "downstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition"
+      ],
+      "model-chosen-reason": "RetinaFace on bounding boxes is optimized for efficient face detection within specified bounding boxes, making it suitable for identifying faces in a crowded scene.",
+      "sample-reasoning": {
+        "gender-classification": "Since the scenario involves people, determining gender from detected faces can help in understanding the demographics of the individuals involved in the altercation.",
+        "emotion-classification": "Analyzing facial expressions can help in understanding the emotional state of the individuals involved in the altercation, which is important for assessing the severity of the situation.",
+        "face-recognition": "Identifying individuals is crucial for security and emergency response, especially in a scenario involving a physical altercation."
+      }
+    },
+    {
+      "id": "gender-classification",
+      "model_id": "gender",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "gender labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The Gender Classifier is specifically trained to identify gender from faces, making it suitable for this task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analyzing gender labels."
+      }
+    },
+    {
+      "id": "emotion-classification",
+      "model_id": "emotion",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "emotion labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The Emotion Classifier is specifically trained to identify emotions from faces, making it suitable for this task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analyzing emotion labels."
+      }
+    },
+    {
+      "id": "face-recognition",
+      "model_id": "arcface",
+      "inputs_from_upstreams": [
+        "face bounding boxes"
+      ],
+      "upstreams": [
+        "face-detection"
+      ],
+      "outputs_for_downstreams": [
+        "identity labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "ArcFace is a state-of-the-art face recognition model that accurately identifies and verifies faces, making it suitable for this task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after identifying individuals."
+      }
+    },
+    {
+      "id": "cloth-color-classification",
+      "model_id": "fashioncolor",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "cloth color labels"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The Cloth Color Classifier is specifically trained to classify and identify colors in clothing items, making it suitable for this task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analyzing cloth color labels."
+      }
+    },
+    {
+      "id": "human-pose-detection",
+      "model_id": "movenet",
+      "inputs_from_upstreams": [
+        "person bounding boxes"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "pose key points"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "MoveNet is a fast and accurate pose detection model that identifies key points of the human body, making it suitable for this task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after analyzing human poses."
+      }
+    },
+    {
+      "id": "fire-detection",
+      "model_id": "firedetect",
+      "inputs_from_upstreams": [
+        "image"
+      ],
+      "upstreams": [
+        "object-detection-general"
+      ],
+      "outputs_for_downstreams": [
+        "fire and smoke bounding boxes"
+      ],
+      "downstreams": [
+        "pipeline-end"
+      ],
+      "model-chosen-reason": "The Fire and Smoke Detection Model is specifically trained to identify and localize fire and smoke, making it suitable for this task.",
+      "sample-reasoning": {
+        "pipeline-end": "Finalizing the pipeline after detecting fire and smoke."
+      }
+    },
+    {
+      "id": "pipeline-end",
+      "model_id": "pipeline-end",
+      "inputs_from_upstreams": [
+        "various task outputs"
+      ],
+      "upstreams": [
+        "gender-classification",
+        "emotion-classification",
+        "face-recognition",
+        "cloth-color-classification",
+        "human-pose-detection",
+        "fire-detection"
+      ],
+      "outputs_for_downstreams": [
+        "none"
+      ],
+      "downstreams": [],
+      "model-chosen-reason": "No model is needed for the pipeline-end task as it serves as the endpoint for the pipeline.",
+      "sample-reasoning": {}
+    }
+  ]
+}

@@ -1,0 +1,174 @@
+================================================================================
+METHOD 1: SAMPLE-LEVEL ACCURACY EVALUATION
+================================================================================
+Timestamp: 20251108_080327
+Evaluation Method: Sample-level (all tasks must match exactly)
+
+================================================================================
+OVERALL STATISTICS
+================================================================================
+Total Samples: 22
+Correct Samples: 4
+Incorrect Samples: 18
+Error Samples: 0
+Accuracy: 18.18%
+
+================================================================================
+PER-SAMPLE BREAKDOWN
+================================================================================
+
+[1/22] business-with-fire-example-1
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 0/8
+Mismatches: 1
+  - Task count mismatch: expected 8, got 9
+
+[2/22] business-with-fire-example-2
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 0/8
+Mismatches: 1
+  - Task count mismatch: expected 8, got 9
+
+[3/22] campus-with-fight-example-1
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 10/11
+Mismatches: 1
+  - Task 'object-detection-general': 1 field(s) differ
+
+[4/22] traffic-with-humans-example-1
+--------------------------------------------------------------------------------
+Status: CORRECT ✓
+Matched Tasks: 8/8
+
+[5/22] campus-with-human-fall-example-1
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 0/11
+Mismatches: 1
+  - Task count mismatch: expected 11, got 8
+
+[6/22] campus-with-human-fall-example-2
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 0/11
+Mismatches: 1
+  - Task count mismatch: expected 11, got 8
+
+[7/22] campus-with-fire-example-1
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 0/11
+Mismatches: 1
+  - Task count mismatch: expected 11, got 12
+
+[8/22] factory-with-human-fall-example-1
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 0/7
+Mismatches: 1
+  - Task count mismatch: expected 7, got 11
+
+[9/22] campus-normal-example-1
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 0/11
+Mismatches: 1
+  - Task count mismatch: expected 11, got 10
+
+[10/22] campus-normal-example-2
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 0/11
+Mismatches: 1
+  - Task count mismatch: expected 11, got 8
+
+[11/22] business-with-human-fall-example-1
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 2/8
+Mismatches: 6
+  - Task 'emotion-classification': 5 field(s) differ
+  - Task 'face-detection': 5 field(s) differ
+  - Task 'face-recognition': 2 field(s) differ
+  - ... and 3 more mismatches
+
+[12/22] business-with-human-fall-example-2
+--------------------------------------------------------------------------------
+Status: CORRECT ✓
+Matched Tasks: 8/8
+
+[13/22] factory-normal-example-1
+--------------------------------------------------------------------------------
+Status: CORRECT ✓
+Matched Tasks: 6/6
+
+[14/22] business-with-fight-example-1
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 7/8
+Mismatches: 1
+  - Task 'object-detection-general': 1 field(s) differ
+
+[15/22] business-with-fight-example-2
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 3/8
+Mismatches: 5
+  - Task 'emotion-classification': 5 field(s) differ
+  - Task 'face-detection': 5 field(s) differ
+  - Task 'face-recognition': 2 field(s) differ
+  - ... and 2 more mismatches
+
+[16/22] traffic-with-fire-example-1
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 0/9
+Mismatches: 1
+  - Task count mismatch: expected 9, got 13
+
+[17/22] traffic-with-accident-example-1
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 0/10
+Mismatches: 1
+  - Task count mismatch: expected 10, got 13
+
+[18/22] business-normal-example-1
+--------------------------------------------------------------------------------
+Status: CORRECT ✓
+Matched Tasks: 8/8
+
+[19/22] business-normal-example-2
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 0/8
+Mismatches: 1
+  - Task count mismatch: expected 8, got 4
+
+[20/22] traffic-with-no-humans-example-1
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 5/6
+Mismatches: 1
+  - Task 'pipeline-end': 1 field(s) differ
+
+[21/22] traffic-with-fight-example-1
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 0/9
+Mismatches: 1
+  - Task count mismatch: expected 9, got 12
+
+[22/22] factory-with-fight-example-1
+--------------------------------------------------------------------------------
+Status: INCORRECT ✗
+Matched Tasks: 0/6
+Mismatches: 1
+  - Task count mismatch: expected 6, got 9
+
+================================================================================
+END OF REPORT
+================================================================================
